@@ -125,7 +125,7 @@ export function GroupHub({ data }: { data: GroupDashboard }) {
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-8">
         <nav aria-label="Group sections" className="mb-6 inline-flex max-w-full gap-1 overflow-x-auto rounded-2xl border border-[#dcebe3] bg-white p-1.5">
           {([
-            ["overview", "Overview"], ["friends", "Friends & earnings"], ["activity", "Contributions"],
+            ["overview", "Overview"], ["friends", "Friends & contributions"], ["activity", "Contributions"],
           ] as [Tab, string][]).map(([key, label]) =>
             <button key={key} type="button" onClick={() => setTab(key)}
               aria-current={tab === key ? "page" : undefined}
