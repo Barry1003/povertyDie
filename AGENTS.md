@@ -1,54 +1,47 @@
 # Poverty Die — development guidance
 
-This is a **Next.js 16 App Router** app with React 19 and **Tailwind CSS v4**, deployed via Vercel. Do not treat the legacy Figma Make/Vite scaffold as the active runtime.
+Private friends' investment record app. Runtime: **Next.js 16 App Router**, **React 19**, **Tailwind CSS 4**, **Neon PostgreSQL/Drizzle**, **Neon Auth (managed Google OAuth)**, and selective client-only React Three Fiber.
 
-## Key files
+## Current application
 
-- `src/app/layout.tsx`: root layout and global CSS
-- `src/app/page.tsx`: authenticated group dashboard entrypoint
-- `src/app/sign-in/page.tsx`: Google login page
-- `src/components/google-sign-in.tsx`: Neon Auth social login client UI
-- `src/lib/auth/server.ts`: Neon Auth managed server adapter
-- `src/lib/auth/client.ts`: Neon browser auth client
-- `proxy.ts`: Next.js 16 Neon Auth route protection
-- `src/app/api/auth/[...nextauth]/route.ts`: Neon Auth HTTP proxy (historical folder name only)
-- `src/lib/auth/authorization.ts`: deprecated stub (email allowlisting removed)
-- `src/app/api/me/route.ts`: example authenticated API
-- `src/db/schema.ts`: app-only PostgreSQL tables, deliberately excludes managed Neon identity tables
-- `src/db/index.ts`: server-only Neon PostgreSQL connection with Drizzle
-- `src/lib/avatar.ts`: deterministic member avatar artwork
-- `src/App.tsx`: existing dashboard prototype as client component
-- `src/data.ts`: sample dashboard financial data — NEVER real balances or holdings
-- `src/index.css`: Tailwind import and original visual styling
+- `src/app/page.tsx` — active, fully server-guarded, Neon-backed group entry.
+- `src/components/group/group-setup.tsx` — create group, join with one-use invitation.
+- `src/components/group/group-hub.tsx` — live shared dashboard with verified and pending contributions, member summaries and reviewer UI.
+- `src/lib/group/security.ts` — Neon Auth session and group-role checks.
+- `src/lib/group/queries.ts` — membership-filtered queries returning the active private group, all member totals, and recent claims.
+- `src/lib/group/money.ts` — exact money arithmetic (integer kobo).
+- `src/db/schema.ts` — member profiles, groups, memberships, invitations, contributions, reviews, investments.
+- `src/app/api/groups/**` — create, join, invitation and role assignment.
+- `src/app/api/contributions/**` — submit payment claim, independent review.
+- `src/components/identity/character-avatar.tsx` — unique deterministic avatar.
+- `src/components/3d/**` — decorative lazy WebGL, never accounting data.
+- `src/App.tsx`, `src/data.ts` — historical Figma demo **not mounted in the live home page**.
 
-## Authentication — use Neon Auth only
+## Security invariants (non-negotiable)
 
-Use `@neon/auth` (Managed Better Auth) for Google sign-in and session management. Do NOT reintroduce `next-auth`, `@auth/drizzle-adapter`, Google app OAuth secrets in the Vercel environment, or self-hosted Better Auth tables. Neon owns its `neon_auth` schema.
+1. Any Google identity can authenticate with Neon Auth, but **sign-in alone never authorizes access to financial records**. Every read/write is scoped to a verified group membership.
+2. A single-use invite is random, SHA-256 hashed in DB, expires in seven days, consumed atomically.
+3. A user belongs to exactly one private group in this initial MVP.
+4. Role changes and invitation creation require a group `admin`.
+5. A `reviewer` or `admin` may verify **other** members' submitted claims only. Review must follow independent inspection of the receiving bank records. Every review has an immutable audit entry.
+6. `submitted` amount is not cash received. Only `verified` claims count in contribution totals.
+7. Never conflate contributions with portfolio valuation, earnings, distributions, or ownership units. The latter **are not implemented**.
+8. Never use JavaScript floating-point arithmetic for money. PostgreSQL NUMERIC(18,2), string decimals and bigint integer kobo only.
+9. No API endpoint may trust a client-supplied userId, role or membership. Rely on server Neon session and database checks.
+10. No Google OAuth client secrets are needed in Vercel; Neon handles Google login. Do not install Auth.js, Clerk or self-host Better Auth.
 
-Server session:`const { data: session } = await auth.getSession()`.
-Client social login:`await authClient.signIn.social({ provider: "google", callbackURL: "/" })`.
-Client sign-out: `await authClient.signOut()`.
-The historical `[...nextauth]` folder name does not mean Auth.js is installed.
+## Local testing
 
-In production, Google provider configuration belongs in the Neon console. **Google sign-up is open to all email addresses.** Do not add email allowlisting. When live group records are connected, enforce membership and role permissions server-side on every financial query/mutation. Authentication alone is never financial authorization.
-
-## Environment
-
-- `DATABASE_URL` — pooled Neon database URL, server-only
-- `NEON_AUTH_BASE_URL` — branch Auth URL, server-only
-- `NEON_AUTH_COOKIE_SECRET` — random 32+ character cookie signing secret, server-only
-
-Do not commit environment files, OAuth secrets or database credentials. See `.env.example` and `README.md`.
-
-## Local setup and checks
-
-```sh
+```bash
 npm install
 npm run db:generate
 npm run db:migrate
+npm test
 npm run typecheck
 npm run build
 npm run dev
 ```
 
-This is a draft migration until real Neon/Vercel environment variables are present and Google login, migrations and builds pass. Keep all financial UI labels explicitly demonstrative until migrated to group-scoped live queries. Do not write unaudited investment or contribution mutations.
+Database migrations require real Neon and must be reviewed before execution. Front-end compilation in CI uses dummy non-functional environment values. Never claim actual bank verification or end-to-end database tests on a CI build alone. See `docs/phase-2-live-groups.md` and `README.md`.
+
+Environment: `DATABASE_URL`, `NEON_AUTH_BASE_URL`, `NEON_AUTH_COOKIE_SECRET` (server-only). The owner handles Vercel; do not alter its live deployment without their instruction.
