@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/server";
-import { isInvitedEmail } from "@/lib/auth/authorization";
 import { GoogleSignIn } from "@/components/google-sign-in";
 import { ImmersiveWealth } from "@/components/3d/immersive-wealth";
 
@@ -9,10 +8,7 @@ export const metadata = { title: "Google sign-in | Poverty Die" };
 
 export default async function SignInPage() {
   const { data: session } = await auth.getSession();
-  if (session?.user) {
-    if (!isInvitedEmail(session.user.email)) redirect("/not-invited");
-    redirect("/");
-  }
+  if (session?.user) redirect("/");
   return (
     <main className="auth-shell">
       <section className="auth-brand">
@@ -29,7 +25,7 @@ export default async function SignInPage() {
           <ImmersiveWealth variant="welcome" />
           <span className="sign-in-sculpture-label">A shared vision, shaped together.</span>
         </div>
-        <small>Private group · Managed Neon authentication</small>
+        <small>Open Google sign-up · Private financial groups</small>
       </section>
       <section className="auth-form">
         <div className="mobile-signin-brand">
@@ -38,9 +34,9 @@ export default async function SignInPage() {
         </div>
         <span className="kicker">WELCOME BACK</span>
         <h2>Sign in to Poverty Die</h2>
-        <p>Sign in with the Google account approved for your investment group.</p>
+        <p>Continue with any Google account to sign in or create your profile.</p>
         <GoogleSignIn />
-        <small className="secure">Access to group data is restricted to approved members.</small>
+        <small className="secure">Registration is open. Access to live group financial records will require membership.</small>
       </section>
     </main>
   );
