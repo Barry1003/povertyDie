@@ -34,8 +34,8 @@ export async function POST(
     WITH changed AS (
       UPDATE "contributions"
       SET "status" = ${decision},
-          "verified_by" = ${viewer.id},
-          "verified_at" = now(),
+          "verified_by" = CASE WHEN ${decision} = 'verified' THEN ${viewer.id} ELSE NULL END,
+          "verified_at" = CASE WHEN ${decision} = 'verified' THEN now() ELSE NULL END,
           "review_note" = ${note}
       WHERE "id" = ${id}::uuid
         AND "group_id" = ${body.groupId}::uuid
