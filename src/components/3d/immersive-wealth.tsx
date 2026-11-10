@@ -1,13 +1,33 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useRef, useState } from "react";
+import { Component, useEffect, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import type { WealthSceneVariant } from "./wealth-scene";
 
 const LazyWealthScene = dynamic(
   () => import("./wealth-scene").then((module) => module.WealthScene),
   { ssr: false, loading: () => null },
 );
+
+class SceneErrorBoundary extends Component<
+  { children: ReactNode; onError: () => void },
+  { failed: boolean }
+> {
+  state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  componentDidCatch() {
+    this.props.onError();
+  }
+
+  render() {
+    return this.state.failed ? null : this.props.children;
+  }
+}
 
 function supportsWebGL(): boolean {
   try {
@@ -40,8 +60,15 @@ export function ImmersiveWealth({
 
     // Avoid heavy WebGL on very small devices, data-saver mode, or when
     // the visitor explicitly prefers less animation.
-    const available = !lowBandwidth && supportsWebGL();
-    const update = () => setMotionAllowed(Boolean(available && !reducedMotion.matches && !mobile.matches));
+    let available: boolean | undefined;
+    const update = () => {
+      if (lowBandwidth || reducedMotion.matches || mobile.matches) {
+        setMotionAllowed(false);
+        return;
+      }
+      if (available === undefined) available = supportsWebGL();
+      setMotionAllowed(available);
+    };
     update();
 
     reducedMotion.addEventListener("change", update);
@@ -90,7 +117,9 @@ export function ImmersiveWealth({
       </div>
       {animated && (
         <div className="wealth-webgl">
-          <LazyWealthScene variant={variant} />
+          <SceneErrorBoundary onError={() => setMotionAllowed(false)}>
+            <LazyWealthScene variant={variant} />
+          </SceneErrorBoundary>
         </div>
       )}
     </div>
