@@ -1,6 +1,6 @@
 {
   "name": "poverty-die",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "test": "tsx --test tests/*.test.ts"
   },
   "dependencies": {
     "@neon/auth": "^0.8.2",
@@ -33,6 +34,7 @@
     "drizzle-kit": "^0.31.5",
     "postcss": "^8.5.0",
     "tailwindcss": "^4.1.0",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "tsx": "^4.20.6"
   }
 }
