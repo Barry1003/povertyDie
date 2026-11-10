@@ -1,0 +1,10 @@
+{
+  "description": "Manage shared investments with clear contribution tracking, unit-based ownership, portfolio performance, custody handovers, and transparent financial reporting for private investment groups.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
