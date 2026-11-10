@@ -1,37 +1,55 @@
-# figma-make-app
+# Poverty Die — development guidance
 
-React + Vite + Tailwind CSS project running inside Figma Make.
+This is a **Next.js 16 App Router** app with React 19 and **Tailwind CSS v4**, deployed via Vercel. Do not treat the legacy Figma Make/Vite scaffold as the active runtime.
 
-## Development Server
+## Key files
 
-A Vite development server is **already running** on `$PORT` (default 8443). You don't need to start it manually.
+- `src/app/layout.tsx`: root layout and global CSS
+- `src/app/page.tsx`: authenticated group dashboard entrypoint
+- `src/app/sign-in/page.tsx`: Google login page
+- `src/components/google-sign-in.tsx`: Neon Auth social login client UI
+- `src/lib/auth/server.ts`: Neon Auth managed server adapter
+- `src/lib/auth/client.ts`: Neon browser auth client
+- `proxy.ts`: Next.js 16 Neon Auth route protection
+- `src/app/api/auth/[...nextauth]/route.ts`: Neon Auth HTTP proxy (historical folder name only)
+- `src/lib/auth/authorization.ts`: approved-email gate
+- `src/app/api/me/route.ts`: example authenticated API
+- `src/db/schema.ts`: app-only PostgreSQL tables, deliberately excludes managed Neon identity tables
+- `src/db/index.ts`: server-only Neon PostgreSQL connection with Drizzle
+- `src/lib/avatar.ts`: deterministic member avatar artwork
+- `src/App.tsx`: existing dashboard prototype as client component
+- `src/data.ts`: sample dashboard financial data — NEVER real balances or holdings
+- `src/index.css`: Tailwind import and original visual styling
 
-- Preview URL: The user can access the running app through the preview panel
-- Hot reload: Changes to source files are reflected immediately
+## Authentication — use Neon Auth only
 
-## Project Structure
+Use `@neon/auth` (Managed Better Auth) for Google sign-in and session management. Do NOT reintroduce `next-auth`, `@auth/drizzle-adapter`, Google app OAuth secrets in the Vercel environment, or self-hosted Better Auth tables. Neon owns its `neon_auth` schema.
 
-This is the canonical project structure. Start with task-relevant files below. Only follow imports or inspect other files when required, when a documented path is missing, or when the repository contradicts this guide.
+Server session:`const { data: session } = await auth.getSession()`.
+Client social login:`await authClient.signIn.social({ provider: "google", callbackURL: "/" })`.
+Client sign-out: `await authClient.signOut()`.
+The historical `[...nextauth]` folder name does not mean Auth.js is installed.
 
-- `src/main.tsx` - React entrypoint; imports `src/index.css` and mounts `src/App.tsx` into the `#root` element
-- `src/App.tsx` - Primary application component and the usual starting point for UI work
-- `src/index.css` - Global CSS entrypoint and Tailwind CSS v4 import
-- `index.html` - Vite HTML shell containing the `#root` element and loading `src/main.tsx`
-- `package.json` - Project dependencies and the Vite build, development, preview, and formatting scripts
-- `vite.config.ts` - Vite configuration with React, Tailwind CSS v4, and Figma Make plugins plus the `@` alias for `src`
-- `.mise.toml` - Toolchain versions for Node.js and pnpm
+In production, Google provider configuration belongs in the Neon console. The private group gate uses `ALLOWED_EMAILS`; each financial query/mutation must also enforce membership and role permissions server-side. Authentication alone is never financial authorization.
 
-## Dependencies
+## Environment
 
-- Runtime: React 19 and React DOM 19
-- Styling: Tailwind CSS v4 with the `@tailwindcss/vite` plugin
-- Build tooling: Vite 8, TypeScript 5.7, and `@vitejs/plugin-react`
-- Formatting: oxfmt
+- `DATABASE_URL` — pooled Neon database URL, server-only
+- `NEON_AUTH_BASE_URL` — branch Auth URL, server-only
+- `NEON_AUTH_COOKIE_SECRET` — random 32+ character cookie signing secret, server-only
+- `ALLOWED_EMAILS` — comma-separated invited verified Google emails
 
-## Styling
+Do not commit environment files, OAuth secrets or database credentials. See `.env.example` and `README.md`.
 
-This project uses **Tailwind CSS v4** through the `@tailwindcss/vite` plugin configured in `vite.config.ts`. `src/index.css` imports Tailwind with `@import 'tailwindcss';`. Use Tailwind utility classes directly in JSX and put global CSS or Tailwind v4 theme customization in `src/index.css`. This scaffold does not need a Tailwind config file or PostCSS config.
+## Local setup and checks
 
-`src/main.tsx` imports `src/index.css`, so global font wiring belongs in `src/index.css`. Keep CSS `@import` statements first, then add any `@font-face` rules and font-family defaults there.
+```sh
+npm install
+npm run db:generate
+npm run db:migrate
+npm run typecheck
+npm run build
+npm run dev
+```
 
-Tailwind emits utility classes in `@layer utilities`, and CSS outside any cascade layer overrides every layer regardless of specificity. Put global element styles, such as resets and defaults for `body`, headings, `button`, or `input`, inside `@layer base { ... }` so utility classes on those elements still apply. Tailwind's Preflight already applies `box-sizing: border-box`, removes default margins, and sets `font: inherit` on form controls, so do not repeat those rules.
+This is a draft migration until real Neon/Vercel environment variables are present and Google login, migrations and builds pass. Keep all financial UI labels explicitly demonstrative until migrated to group-scoped live queries. Do not write unaudited investment or contribution mutations.
