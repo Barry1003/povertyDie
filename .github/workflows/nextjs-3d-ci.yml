@@ -20,7 +20,6 @@ jobs:
       DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/poverty_die?sslmode=require
       NEON_AUTH_BASE_URL: https://example.com/neondb/auth
       NEON_AUTH_COOKIE_SECRET: ci-build-placeholder-only-32-characters-not-for-production
-      ALLOWED_EMAILS: demo@example.com
       NEXT_TELEMETRY_DISABLED: "1"
     steps:
       - uses: actions/checkout@v4
