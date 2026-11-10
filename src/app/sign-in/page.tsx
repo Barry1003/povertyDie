@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/server";
 import { isInvitedEmail } from "@/lib/auth/authorization";
 import { GoogleSignIn } from "@/components/google-sign-in";
+import { ImmersiveWealth } from "@/components/3d/immersive-wealth";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Google sign-in | Poverty Die" };
@@ -24,9 +25,17 @@ export default async function SignInPage() {
           <h1>Build wealth together. <em>Track every step.</em></h1>
           <p>A transparent home for friends to track shared investments, contributions and progress.</p>
         </div>
+        <div className="sign-in-sculpture">
+          <ImmersiveWealth variant="welcome" />
+          <span className="sign-in-sculpture-label">A shared vision, shaped together.</span>
+        </div>
         <small>Private group · Managed Neon authentication</small>
       </section>
       <section className="auth-form">
+        <div className="mobile-signin-brand">
+          <div className="logo"><span className="logo-mark"><span>P</span></span><div><b>POVERTY DIE</b><small>WEALTH COLLECTIVE</small></div></div>
+          <ImmersiveWealth variant="welcome" className="mobile-signin-sculpture" />
+        </div>
         <span className="kicker">WELCOME BACK</span>
         <h2>Sign in to Poverty Die</h2>
         <p>Sign in with the Google account approved for your investment group.</p>
