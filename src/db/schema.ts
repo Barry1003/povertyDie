@@ -20,7 +20,7 @@ export const profiles = pgTable("profiles", {
 export const groups = pgTable("groups", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull(),
-  createdBy: text("created_by").notNull(),
+  createdBy: text("created_by").notNull().unique(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -32,7 +32,7 @@ export const memberships = pgTable("memberships", {
   joinedAt: timestamp("joined_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [
   uniqueIndex("one_membership_per_group").on(t.groupId, t.userId),
-  index("membership_user_idx").on(t.userId),
+  uniqueIndex("one_group_per_user").on(t.userId),
 ]);
 
 // Only a hash of each single-use, time-limited invite is stored in Postgres.
