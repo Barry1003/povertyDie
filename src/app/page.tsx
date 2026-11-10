@@ -1,30 +1,29 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth/server";
-import { db } from "@/db";
-import { profiles } from "@/db/schema";
-import App from "@/App";
-import { avatarUrl } from "@/lib/avatar";
+import { GroupHub } from "@/components/group/group-hub";
+import { GroupSetup } from "@/components/group/group-setup";
+import { getViewer } from "@/lib/group/security";
+import { loadGroupDashboard } from "@/lib/group/queries";
 
 export const dynamic = "force-dynamic";
 
-export default async function HomePage() {
-  const { data: session } = await auth.getSession();
-  if (!session?.user?.id) redirect("/sign-in");
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ invite?: string | string[] }>;
+}) {
+  const viewer = await getViewer();
+  if (!viewer) redirect("/sign-in");
 
-  const userId = session.user.id;
+  const dashboard = await loadGroupDashboard(viewer);
+  if (!dashboard) {
+    const params = await searchParams;
+    return (
+      <GroupSetup
+        viewer={viewer}
+        initialInvite={typeof params.invite === "string" ? params.invite : ""}
+      />
+    );
+  }
 
-  // Neon Auth owns the user; this app only stores additional profile data.
-  // Seed is the stable opaque user ID, unique per account and across devices.
-  await db.insert(profiles)
-    .values({ userId, avatarSeed: userId })
-    .onConflictDoNothing();
-
-  return (
-    <App
-      viewer={{
-        name: session.user.name || session.user.email || "Member",
-        image: avatarUrl(userId),
-      }}
-    />
-  );
+  return <GroupHub data={dashboard} />;
 }
