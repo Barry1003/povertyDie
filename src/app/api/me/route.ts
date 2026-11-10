@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/server";
-import { isInvitedEmail } from "@/lib/auth/authorization";
 import { db } from "@/db";
 import { memberships, profiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -12,9 +11,6 @@ export async function GET() {
   const { data: session } = await auth.getSession();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  if (!isInvitedEmail(session.user.email)) {
-    return NextResponse.json({ error: "Invitation required" }, { status: 403 });
   }
   const userId = session.user.id;
   await db.insert(profiles)
