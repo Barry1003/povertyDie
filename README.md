@@ -1,66 +1,83 @@
 # Poverty Die
 
-A private wealth collective built with **Next.js App Router**, **Tailwind CSS v4**, **Neon PostgreSQL + Drizzle**, and **Neon Auth (Managed Better Auth)**.
+A small, private investment group for friends. **Next.js 16, React 19, Tailwind CSS v4, Neon PostgreSQL + Drizzle, Neon Auth (Managed Better Auth)**, and optional Three.js/React Three Fiber visuals.
 
-## Architecture
+## What the live app does
 
-- Next.js 16 (React 19) renders the dashboard, with server-only APIs and queries.
-- Neon Auth handles Google sign-in and sessions. Its identity tables live in Neon's managed `neon_auth` schema.
-- App-specific tables (`profiles`, `groups`, `memberships`, `contributions`, `investments`) are maintained through Drizzle in the public schema. Do **not** run Auth.js migrations or recreate managed auth tables.
-- Each Google-authenticated user receives a stable avatar seeded from the unique Neon Auth user ID. It stays the same across devices.
-- **Google registration is open:** there is no email allowlist. A signed-in account is not automatically a member of a financial group. Before wiring live data, every group-specific query and mutation must validate membership and role.
+- Google login via Neon Auth. Google sign-up is open, but a Google identity by itself **cannot read another group's financial data**.
+- An authenticated person can create their first group and becomes its admin.
+- The admin can issue a cryptographically random, one-time invite link (expires in seven days). Each friend signs in with Google and redeems an invitation to join the same group.
+- All group members share a **single live overview and contribution register** with member avatars, verified contributions, and submitted amounts awaiting verification.
+- A member submits a manual transfer reference and amount. The claim remains **pending** until another authorized person checks the receiving account outside the app and records a review.
+- The admin can appoint reviewers. A reviewer or admin **cannot verify their own claim**.
+- Group financial information is derived from database records, **not** the old Figma sample dataset. Money is stored as Postgres NUMERIC, calculated in integer kobo, and never silently treated as verified after a form submission.
+- The active home page uses `GroupHub`/`GroupSetup`. The old `src/App.tsx` is retained as an **unused design reference**, not the live financial dashboard.
 
-## Neon + Vercel prerequisites
+## Required environment
 
-1. Create a Neon PostgreSQL database, preferably in an AWS region supporting Neon Auth.
-2. Enable **Neon Auth / Managed Better Auth** for the SAME Neon branch as your database. Enable the Google social provider in Neon Console.
-3. Add `http://localhost:3000` and your eventual Vercel production domain to the branch's **trusted domains**.
-4. Copy the branch's **Auth URL** and the database's **pooled PostgreSQL connection string**.
-5. Add the environment variables below in Vercel and your local `.env.local`. Do not commit secrets.
-6. For development Neon may provide shared Google OAuth credentials. For production you may need your own Google OAuth application **configured inside Neon**, not in Vercel app environment variables (follow Neon's production checklist).
-7. Generate and apply Drizzle migrations before first use.
+Configure in your local `.env.local` and your own Vercel project; never put secrets into GitHub.
 
-### Environment variables
+| Name | Source |
+| --- | --- |
+| `DATABASE_URL` | Neon pooled PostgreSQL connection string |
+| `NEON_AUTH_BASE_URL` | Branch-specific Neon Auth URL |
+| `NEON_AUTH_COOKIE_SECRET` | Random secret of 32+ characters, e.g. `openssl rand -base64 32` |
 
-| Variable | Required | Purpose |
-| --- | --- | --- |
-| `DATABASE_URL` | Yes | Server-only pooled PostgreSQL URL from Neon |
-| `NEON_AUTH_BASE_URL` | Yes | Neon managed Auth URL for the same database branch |
-| `NEON_AUTH_COOKIE_SECRET` | Yes | Next.js session-cache cookie signing, 32+ random characters |
+Google OAuth credentials are managed by **Neon Auth**; do not add Auth.js or app-level `AUTH_GOOGLE_ID`/`AUTH_GOOGLE_SECRET`. Enable the Google provider and trusted development / production domains in Neon.
 
-Generate the cookie secret with `openssl rand -base64 32`.
+Neon Auth's identity tables are managed in the `neon_auth` schema; Drizzle only creates our application tables. Use the database and Auth URL from the **same Neon branch**.
 
-**No `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `AUTH_SECRET`, or separate Auth.js provider is needed.** Authentication is delegated to Neon.
+## Local run / database setup
 
-## Run locally
-
-Requires Node 22+.
+Use Node.js 22+.
 
 ```bash
 npm install
 cp .env.example .env.local
-# Fill in real values in .env.local
+# Put your real Neon connection URL and Auth values in .env.local.
 npm run db:generate
 npm run db:migrate
+npm test
 npm run typecheck
+npm run build
 npm run dev
 ```
 
-Open http://localhost:3000 and sign in with any Google account.
+Open http://localhost:3000. An initial signed-in account can create the group and invite friends. **Apply migrations before signing in**, since profile creation requires the app tables.
 
-For Vercel, `npm run build` is configured. The old `pnpm-lock.yaml` and Figma/Vite scaffold files are retained for reference but unused by the Next.js runtime. The `vercel.json` install command uses npm.
+Important: migration generation uses `drizzle.config.ts` and creates files under `drizzle/`. Review the generated SQL against the target Neon branch before applying, particularly if any previous prototype tables already exist; don't use destructive resets. We have not applied migrations to a live Neon project from this repository.
 
-## Migration status
+## Live group rules
 
-- The Next.js app, Neon Auth handler, proxy, server-side session guard, Google sign-in button, sign-out action, and avatar persistence are implemented.
-- Existing Figma dashboard screens retain **sample data only**; no real payment, earnings, holdings, verification, or ledger operations are wired yet.
-- The database schema is ready for the next stage; no real financial records have been imported.
-- The `/api/me` endpoint returns only the authenticated user's profile and their existing group roles. A new user may have no group memberships.
-- The `src/app/api/auth/[...nextauth]` directory retains a historical filename, but runs a **Neon Auth** handler. It does NOT use `next-auth`.
-- Server-side role, group authorization and accounting/investment rules still need implementing before any live financial activity.
+- Each person belongs to **one group** in this MVP. All group finance endpoints require an authenticated user and membership in that exact group.
+- A valid Google account without a private invitation sees only the create/join screen.
+- Group admins manage invitations and appoint independent reviewers.
+- Submitted payment claims have a status `submitted`, `verified` or `rejected`, with an audit record for each review.
+- Verified contribution totals include only `verified` records. Submitted and rejected transfers are excluded.
+- The app does **not** transfer money or independently confirm bank transactions. The verification button is a manual attestation after comparing against bank records.
+- **Investment earnings, ownership units, NAV, distributions and withdrawals are not implemented.** We intentionally show “Not calculated yet” instead of fictitious returns.
 
-The project is in a **draft pull request** until `npm install`, `npm run typecheck`, `npm run build`, Google login and database migrations are tested with configured Neon services.
+## Relevant code
 
-## Security
+| Purpose | File |
+| --- | --- |
+| Dashboard entry | `src/app/page.tsx` |
+| Shared live group UI | `src/components/group/group-hub.tsx` |
+| First group / joining | `src/components/group/group-setup.tsx` |
+| Schema | `src/db/schema.ts` |
+| Session, authorization | `src/lib/group/security.ts` |
+| Member totals & history | `src/lib/group/queries.ts` |
+| Exact NGN arithmetic | `src/lib/group/money.ts` |
+| Group/invite/join endpoints | `src/app/api/groups/` |
+| Submit and review endpoints | `src/app/api/contributions/` |
+| Character avatars | `src/components/identity/character-avatar.tsx` |
+| 3D artwork | `src/components/3d/` |
+| Tests | `tests/money.test.ts` |
 
-Any Google account can create a Neon Auth identity and access the current **demo-only** dashboard. No email list needs to be configured. An authenticated identity is **not** a group membership. Before connecting real contributions, holdings or investments, enforce server-side membership and role checks on every group-data query and mutation; never expose financial records merely because an account has signed in.
+See `docs/phase-2-live-groups.md` for permissions, data invariants, manual QA, and known limitations.
+
+## Security / launch status
+
+The code and automated checks can be evaluated in GitHub, but **live Neon migrations, cross-account authentication, CSRF/origin checks, and the manual verification flow must be tested end-to-end** before letting anyone record actual transfers. Next phases: proper investment valuations and member unit accounting, receipt evidence, reconciliation/exports, transaction corrections, group governance, and security review.
+
+Old Vite/Figma files remain for reference but are not used at runtime. Vercel setup is managed separately by the project owner.
