@@ -1,43 +1,13 @@
 import { relations } from "drizzle-orm";
-import { boolean, index, integer, numeric, pgTable, primaryKey, text, timestamp, uuid, uniqueIndex } from "drizzle-orm/pg-core";
+import { index, numeric, pgTable, text, timestamp, uuid, uniqueIndex } from "drizzle-orm/pg-core";
 
-export const users = pgTable("users", {
-  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
-  name: text("name"),
-  email: text("email").notNull().unique(),
-  emailVerified: timestamp("email_verified", { mode: "date" }),
-  image: text("image"),
-});
-
-export const accounts = pgTable("accounts", {
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  type: text("type").$type<"oauth" | "oidc" | "email" | "webauthn">().notNull(),
-  provider: text("provider").notNull(),
-  providerAccountId: text("provider_account_id").notNull(),
-  refresh_token: text("refresh_token"),
-  access_token: text("access_token"),
-  expires_at: integer("expires_at"),
-  token_type: text("token_type"),
-  scope: text("scope"),
-  id_token: text("id_token"),
-  session_state: text("session_state"),
-}, (t) => [primaryKey({ columns: [t.provider, t.providerAccountId] })]);
-
-export const sessions = pgTable("sessions", {
-  sessionToken: text("session_token").primaryKey(),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  expires: timestamp("expires", { mode: "date" }).notNull(),
-});
-
-export const verificationTokens = pgTable("verification_tokens", {
-  identifier: text("identifier").notNull(),
-  token: text("token").notNull(),
-  expires: timestamp("expires", { mode: "date" }).notNull(),
-}, (t) => [primaryKey({ columns: [t.identifier, t.token] })]);
-
-// Display identity: one stable, unique seed for each Google-authenticated user.
+/**
+ * Neon Auth creates and manages identities in neon_auth.user, neon_auth.session,
+ * neon_auth.account, and associated tables. Do not recreate or migrate those.
+ * User IDs below are the stable, opaque IDs returned by Neon Auth.
+ */
 export const profiles = pgTable("profiles", {
-  userId: text("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),
+  userId: text("user_id").primaryKey(),
   avatarSeed: text("avatar_seed").notNull().unique(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -51,21 +21,24 @@ export const groups = pgTable("groups", {
 export const memberships = pgTable("memberships", {
   id: uuid("id").defaultRandom().primaryKey(),
   groupId: uuid("group_id").notNull().references(() => groups.id, { onDelete: "cascade" }),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull(),
   role: text("role", { enum: ["member", "admin", "reviewer"] }).notNull().default("member"),
   joinedAt: timestamp("joined_at", { withTimezone: true }).notNull().defaultNow(),
-}, (t) => [uniqueIndex("one_membership_per_group").on(t.groupId,t.userId), index("membership_user_idx").on(t.userId)]);
+}, (t) => [
+  uniqueIndex("one_membership_per_group").on(t.groupId, t.userId),
+  index("membership_user_idx").on(t.userId),
+]);
 
-// Amounts are NUMERIC strings rather than floats to avoid currency rounding errors.
-// A claimed payment is NOT verified until a separate reviewer approves it.
+// Amounts are NUMERIC strings rather than floating-point values.
+// Only an independent approved verification makes a claim count as a contribution.
 export const contributions = pgTable("contributions", {
   id: uuid("id").defaultRandom().primaryKey(),
   groupId: uuid("group_id").notNull().references(() => groups.id),
-  memberId: text("member_id").notNull().references(() => users.id),
+  memberId: text("member_id").notNull(),
   amount: numeric("amount", { precision: 18, scale: 2 }).notNull(),
   currency: text("currency").notNull().default("NGN"),
   status: text("status", { enum: ["submitted", "verified", "rejected"] }).notNull().default("submitted"),
-  verifiedBy: text("verified_by").references(() => users.id),
+  verifiedBy: text("verified_by"),
   verifiedAt: timestamp("verified_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index("contribution_group_created_idx").on(t.groupId, t.createdAt)]);
@@ -81,10 +54,11 @@ export const investments = pgTable("investments", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index("investment_group_idx").on(t.groupId)]);
 
-export const usersRelations = relations(users, ({ many, one }) => ({
-  accounts: many(accounts), sessions: many(sessions), memberships: many(memberships), profile: one(profiles),
+export const groupRelations = relations(groups, ({ many }) => ({
+  memberships: many(memberships),
+  contributions: many(contributions),
+  investments: many(investments),
 }));
-export const membershipsRelations = relations(memberships, ({ one }) => ({
-  user: one(users, { fields: [memberships.userId], references: [users.id] }),
+export const membershipRelations = relations(memberships, ({ one }) => ({
   group: one(groups, { fields: [memberships.groupId], references: [groups.id] }),
 }));
