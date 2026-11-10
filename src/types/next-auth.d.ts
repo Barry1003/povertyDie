@@ -1,12 +1,2 @@
-import "next-auth";
-
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string;
-      name?: string | null;
-      email?: string | null;
-      image?: string | null;
-    };
-  }
-}
+// Former Auth.js type augmentation. Neon Auth handles its own session types.
+export {};
