@@ -1,10 +1,10 @@
 import { auth } from "@/lib/auth/server";
 
-// Next.js 16 route protection. Signed-out users can reach the login and
-// authorization-error pages; the auth proxy itself is handled by Neon.
+// Next.js 16 route protection. Anyone can sign up through Neon Google Auth.
+// Signed-out visitors can reach sign-in; other app routes need a session.
 export default auth.middleware({
   loginUrl: "/sign-in",
-  publicRoutes: ["/sign-in", "/not-invited"],
+  publicRoutes: ["/sign-in"],
 });
 
 export const config = {

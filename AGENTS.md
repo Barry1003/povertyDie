@@ -12,7 +12,7 @@ This is a **Next.js 16 App Router** app with React 19 and **Tailwind CSS v4**, d
 - `src/lib/auth/client.ts`: Neon browser auth client
 - `proxy.ts`: Next.js 16 Neon Auth route protection
 - `src/app/api/auth/[...nextauth]/route.ts`: Neon Auth HTTP proxy (historical folder name only)
-- `src/lib/auth/authorization.ts`: approved-email gate
+- `src/lib/auth/authorization.ts`: deprecated stub (email allowlisting removed)
 - `src/app/api/me/route.ts`: example authenticated API
 - `src/db/schema.ts`: app-only PostgreSQL tables, deliberately excludes managed Neon identity tables
 - `src/db/index.ts`: server-only Neon PostgreSQL connection with Drizzle
@@ -30,14 +30,13 @@ Client social login:`await authClient.signIn.social({ provider: "google", callba
 Client sign-out: `await authClient.signOut()`.
 The historical `[...nextauth]` folder name does not mean Auth.js is installed.
 
-In production, Google provider configuration belongs in the Neon console. The private group gate uses `ALLOWED_EMAILS`; each financial query/mutation must also enforce membership and role permissions server-side. Authentication alone is never financial authorization.
+In production, Google provider configuration belongs in the Neon console. **Google sign-up is open to all email addresses.** Do not add email allowlisting. When live group records are connected, enforce membership and role permissions server-side on every financial query/mutation. Authentication alone is never financial authorization.
 
 ## Environment
 
 - `DATABASE_URL` — pooled Neon database URL, server-only
 - `NEON_AUTH_BASE_URL` — branch Auth URL, server-only
 - `NEON_AUTH_COOKIE_SECRET` — random 32+ character cookie signing secret, server-only
-- `ALLOWED_EMAILS` — comma-separated invited verified Google emails
 
 Do not commit environment files, OAuth secrets or database credentials. See `.env.example` and `README.md`.
 

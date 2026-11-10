@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/server";
-import { isInvitedEmail } from "@/lib/auth/authorization";
 import { db } from "@/db";
 import { profiles } from "@/db/schema";
 import App from "@/App";
@@ -11,7 +10,6 @@ export const dynamic = "force-dynamic";
 export default async function HomePage() {
   const { data: session } = await auth.getSession();
   if (!session?.user?.id) redirect("/sign-in");
-  if (!isInvitedEmail(session.user.email)) redirect("/not-invited");
 
   const userId = session.user.id;
 

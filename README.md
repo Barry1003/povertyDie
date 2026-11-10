@@ -7,8 +7,8 @@ A private wealth collective built with **Next.js App Router**, **Tailwind CSS v4
 - Next.js 16 (React 19) renders the dashboard, with server-only APIs and queries.
 - Neon Auth handles Google sign-in and sessions. Its identity tables live in Neon's managed `neon_auth` schema.
 - App-specific tables (`profiles`, `groups`, `memberships`, `contributions`, `investments`) are maintained through Drizzle in the public schema. Do **not** run Auth.js migrations or recreate managed auth tables.
-- Each approved member receives a stable avatar seeded from the unique Neon Auth user ID. It stays the same across devices.
-- `ALLOWED_EMAILS` is a fail-closed app access gate; a valid Google login alone does not authorize access to financial pages. For production, every group-specific query and mutation must also validate membership and role.
+- Each Google-authenticated user receives a stable avatar seeded from the unique Neon Auth user ID. It stays the same across devices.
+- **Google registration is open:** there is no email allowlist. A signed-in account is not automatically a member of a financial group. Before wiring live data, every group-specific query and mutation must validate membership and role.
 
 ## Neon + Vercel prerequisites
 
@@ -27,7 +27,6 @@ A private wealth collective built with **Next.js App Router**, **Tailwind CSS v4
 | `DATABASE_URL` | Yes | Server-only pooled PostgreSQL URL from Neon |
 | `NEON_AUTH_BASE_URL` | Yes | Neon managed Auth URL for the same database branch |
 | `NEON_AUTH_COOKIE_SECRET` | Yes | Next.js session-cache cookie signing, 32+ random characters |
-| `ALLOWED_EMAILS` | Yes | Comma-separated verified Google emails approved to enter the private group |
 
 Generate the cookie secret with `openssl rand -base64 32`.
 
@@ -47,7 +46,7 @@ npm run typecheck
 npm run dev
 ```
 
-Open http://localhost:3000 and use an approved Google account.
+Open http://localhost:3000 and sign in with any Google account.
 
 For Vercel, `npm run build` is configured. The old `pnpm-lock.yaml` and Figma/Vite scaffold files are retained for reference but unused by the Next.js runtime. The `vercel.json` install command uses npm.
 
@@ -56,7 +55,7 @@ For Vercel, `npm run build` is configured. The old `pnpm-lock.yaml` and Figma/Vi
 - The Next.js app, Neon Auth handler, proxy, server-side session guard, Google sign-in button, sign-out action, and avatar persistence are implemented.
 - Existing Figma dashboard screens retain **sample data only**; no real payment, earnings, holdings, verification, or ledger operations are wired yet.
 - The database schema is ready for the next stage; no real financial records have been imported.
-- The `/api/me` endpoint returns only the authenticated, allowlisted user's profile and group roles.
+- The `/api/me` endpoint returns only the authenticated user's profile and their existing group roles. A new user may have no group memberships.
 - The `src/app/api/auth/[...nextauth]` directory retains a historical filename, but runs a **Neon Auth** handler. It does NOT use `next-auth`.
 - Server-side role, group authorization and accounting/investment rules still need implementing before any live financial activity.
 
@@ -64,4 +63,4 @@ The project is in a **draft pull request** until `npm install`, `npm run typeche
 
 ## Security
 
-The access gate intentionally fails closed when `ALLOWED_EMAILS` is empty. Neon Auth itself may still create an identity for a Google account before this app decides whether that identity is allowed in Poverty Die. An identity is not a group membership. Never assume sign-in alone grants visibility into another user's contributions or investments.
+Any Google account can create a Neon Auth identity and access the current **demo-only** dashboard. No email list needs to be configured. An authenticated identity is **not** a group membership. Before connecting real contributions, holdings or investments, enforce server-side membership and role checks on every group-data query and mutation; never expose financial records merely because an account has signed in.
