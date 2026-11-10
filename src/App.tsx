@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { signOut } from "next-auth/react";
 import { activities, finance, history, holdings, ledger, members, money, reports } from "./data";
 
 type IconName =
@@ -2530,109 +2531,6 @@ function Empty({ title, text }: { title: string; text: string }) {
   );
 }
 
-function Auth({ onEnter }: { onEnter: () => void }) {
-  const [mode, setMode] = useState("signin");
-  return (
-    <div className="auth-shell">
-      <div className="auth-brand">
-        <Logo />
-        <div className="auth-copy">
-          <Badge tone="dark">PRIVATE WEALTH COLLECTIVE</Badge>
-          <h1>
-            Build wealth together.
-            <br />
-            <em>Track every step.</em>
-          </h1>
-          <p>
-            A clear, accountable home for contributions, shared investments, ownership, and fund
-            custody.
-          </p>
-          <div className="trust-points">
-            <span>
-              <Icon name="check" /> Every naira accounted for
-            </span>
-            <span>
-              <Icon name="check" /> Ownership based on timing and units
-            </span>
-            <span>
-              <Icon name="check" /> Every decision traceable
-            </span>
-          </div>
-        </div>
-        <small>Private, invitation-only access · Prototype data</small>
-      </div>
-      <main className="auth-form">
-        <div className="mobile-auth-logo">
-          <Logo />
-        </div>
-        {mode === "signin" ? (
-          <>
-            <span className="kicker">WELCOME BACK</span>
-            <h2>Sign in to Poverty Die</h2>
-            <p>Access your group’s verified financial position.</p>
-            <label>
-              <span>Email address</span>
-              <input type="email" defaultValue="amara@example.com" />
-            </label>
-            <label>
-              <span>Password</span>
-              <input type="password" defaultValue="povertydie" />
-            </label>
-            <div className="auth-row">
-              <label className="checkbox">
-                <input type="checkbox" /> Keep me signed in
-              </label>
-              <button className="text-link" onClick={() => setMode("reset")}>
-                Forgot password?
-              </button>
-            </div>
-            <Button onClick={onEnter}>
-              Sign in <Icon name="arrow" />
-            </Button>
-            <div className="auth-divider">
-              <span>INVITED TO THE GROUP?</span>
-            </div>
-            <Button kind="secondary" onClick={() => setMode("invite")}>
-              Accept an invitation
-            </Button>
-          </>
-        ) : mode === "invite" ? (
-          <>
-            <button className="back" onClick={() => setMode("signin")}>
-              ← Back to sign in
-            </button>
-            <span className="kicker">PRIVATE INVITATION</span>
-            <h2>Join your investment group</h2>
-            <p>Enter the invitation code sent by your administrator.</p>
-            <label>
-              <span>Invitation code</span>
-              <input placeholder="PD-XXXX-XXXX" />
-            </label>
-            <Button onClick={onEnter}>Review invitation</Button>
-          </>
-        ) : (
-          <>
-            <button className="back" onClick={() => setMode("signin")}>
-              ← Back to sign in
-            </button>
-            <span className="kicker">ACCOUNT RECOVERY</span>
-            <h2>Reset your password</h2>
-            <p>We’ll send a secure reset link to your registered email.</p>
-            <label>
-              <span>Email address</span>
-              <input type="email" placeholder="you@example.com" />
-            </label>
-            <Button onClick={() => setMode("signin")}>Send reset link</Button>
-          </>
-        )}
-        <small className="secure">
-          <Icon name="lock" /> Simulated authentication for this frontend prototype
-        </small>
-      </main>
-    </div>
-  );
-}
-
 function Onboarding({ finish }: { finish: () => void }) {
   const [step, setStep] = useState(0);
   const data = [
@@ -2792,6 +2690,7 @@ export default function App({ viewer }: { viewer: { name: string; image: string 
             </div>
             <Icon name="more" />
           </button>
+          <button className="profile-menu" type="button" onClick={() => void signOut({ callbackUrl: "/sign-in" })}>Sign out</button>
         </div>
       </aside>
       <div className="workspace">
