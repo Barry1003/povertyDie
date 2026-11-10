@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { authClient } from "@/lib/auth/client";
+import { ImmersiveWealth } from "@/components/3d/immersive-wealth";
+import { CharacterAvatar } from "@/components/identity/character-avatar";
 import { activities, finance, history, holdings, ledger, members, money, reports } from "./data";
 
 type IconName =
@@ -254,15 +256,7 @@ function Button({
   );
 }
 function Avatar({ name, size = "md", image }: { name: string; size?: string; image?: string }) {
-  return (
-    <span className={`avatar ${size}`}>
-      {image ? <img src={image} alt="" width="32" height="32" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} /> : name
-        .split(" ")
-        .map((x) => x[0])
-        .slice(0, 2)
-        .join("")}
-    </span>
-  );
+  return <CharacterAvatar name={name} seed={image || name} size={size} />;
 }
 function PageHeader({
   eyebrow,
@@ -398,7 +392,7 @@ function Donut() {
   );
 }
 
-function Overview({ go, paymentApproved }: { go: (x: string) => void; paymentApproved: boolean }) {
+function Overview({ go, paymentApproved, viewer }: { go: (x: string) => void; paymentApproved: boolean; viewer: { name: string; image: string } }) {
   const membersPaid =
     members.filter((member) => member.paid === 25_000).length + (paymentApproved ? 1 : 0);
   const groupProfit = finance.nav - finance.capitalContributed;
@@ -408,6 +402,9 @@ function Overview({ go, paymentApproved }: { go: (x: string) => void; paymentApp
   const collectedPercent = (verifiedThisMonth / finance.expectedMonthly) * 100;
   return (
     <div>
+      <div className="preview-notice" role="note">
+        <Icon name="info" /> Visual prototype: contributions, earnings and balances below are sample figures, not live Neon records.
+      </div>
       <PageHeader
         eyebrow="FRIDAY, 7 FEBRUARY 2025"
         title="Poverty Die"
@@ -422,10 +419,11 @@ function Overview({ go, paymentApproved }: { go: (x: string) => void; paymentApp
       />
       <section className="club-hero">
         <div className="club-value">
+          <div className="club-wealth-sculpture"><ImmersiveWealth variant="overview" /></div>
           <div className="club-hero-top">
             <span>OUR GROUP'S TOTAL VALUE</span>
             <Badge tone="dark">
-              <Icon name="shield" /> Approved 31 Jan
+              <Icon name="shield" /> Prototype · Jan 2025
             </Badge>
           </div>
           <strong>{money(finance.nav)}</strong>
@@ -472,7 +470,7 @@ function Overview({ go, paymentApproved }: { go: (x: string) => void; paymentApp
       </section>
       <section className="your-share">
         <div>
-          <Avatar name="Amara Okafor" />
+          <Avatar name={viewer.name} image={viewer.image} />
           <div>
             <span>YOUR SHARE</span>
             <b>{money(finance.member.value)}</b>
@@ -2460,6 +2458,7 @@ function SubmitPayment({ close }: { close: () => void }) {
         )}
         {step === 3 && (
           <div className="success-state">
+            <ImmersiveWealth className="submission-sculpture" variant="celebration" />
             <span className="success-icon">
               <Icon name="check" size={28} />
             </span>
@@ -2568,9 +2567,7 @@ function Onboarding({ finish }: { finish: () => void }) {
         <div className="onboard-visual">
           <div className="orbit o1" />
           <div className="orbit o2" />
-          <span>
-            <Icon name={d.icon as IconName} size={42} />
-          </span>
+          <ImmersiveWealth className="onboarding-sculpture" variant={step === 2 ? "celebration" : "onboarding"} />
           {step === 2 && (
             <div className="unit-example">
               <div>
@@ -2633,7 +2630,7 @@ export default function App({ viewer }: { viewer: { name: string; image: string 
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
   const content = useMemo(() => {
-    if (page === "Overview") return <Overview go={go} paymentApproved={paymentApproved} />;
+    if (page === "Overview") return <Overview go={go} paymentApproved={paymentApproved} viewer={viewer} />;
     if (page === "Contributions")
       return <Contributions go={go} paymentApproved={paymentApproved} />;
     if (page === "My Earnings") return <Earnings />;
