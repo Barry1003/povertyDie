@@ -31,6 +31,8 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Exact-money regression tests
         run: npm test
+      - name: Validate Drizzle migration generation
+        run: npm run db:generate
       - name: TypeScript typecheck
         run: npm run typecheck
       - name: Production build
