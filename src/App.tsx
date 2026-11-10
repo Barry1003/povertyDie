@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { signOut } from "next-auth/react";
+import { authClient } from "@/lib/auth/client";
 import { activities, finance, history, holdings, ledger, members, money, reports } from "./data";
 
 type IconName =
@@ -2690,7 +2690,7 @@ export default function App({ viewer }: { viewer: { name: string; image: string 
             </div>
             <Icon name="more" />
           </button>
-          <button className="profile-menu" type="button" onClick={() => void signOut({ callbackUrl: "/sign-in" })}>Sign out</button>
+          <button className="profile-menu" type="button" onClick={() => void authClient.signOut().then(() => window.location.assign("/sign-in"))}>Sign out</button>
         </div>
       </aside>
       <div className="workspace">
