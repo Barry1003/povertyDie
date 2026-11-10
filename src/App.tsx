@@ -1,3 +1,5 @@
+"use client";
+
 import { useMemo, useState } from "react";
 import { activities, finance, history, holdings, ledger, members, money, reports } from "./data";
 
@@ -250,10 +252,10 @@ function Button({
     </button>
   );
 }
-function Avatar({ name, size = "md" }: { name: string; size?: string }) {
+function Avatar({ name, size = "md", image }: { name: string; size?: string; image?: string }) {
   return (
     <span className={`avatar ${size}`}>
-      {name
+      {image ? <img src={image} alt="" width="32" height="32" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} /> : name
         .split(" ")
         .map((x) => x[0])
         .slice(0, 2)
@@ -2715,9 +2717,8 @@ function Onboarding({ finish }: { finish: () => void }) {
   );
 }
 
-export default function App() {
-  const [authed, setAuthed] = useState(false),
-    [onboarding, setOnboarding] = useState(false),
+export default function App({ viewer }: { viewer: { name: string; image: string } }) {
+  const [onboarding, setOnboarding] = useState(false),
     [page, setPage] = useState("Overview"),
     [dark, setDark] = useState(false),
     [payment, setPayment] = useState(false),
@@ -2751,15 +2752,6 @@ export default function App() {
       return <Settings go={(p) => (p === "Onboarding" ? setOnboarding(true) : go(p))} />;
     return <DetailPage page={page} go={go} />;
   }, [page, paymentApproved]);
-  if (!authed)
-    return (
-      <Auth
-        onEnter={() => {
-          setAuthed(true);
-          setOnboarding(true);
-        }}
-      />
-    );
   if (onboarding) return <Onboarding finish={() => setOnboarding(false)} />;
   const mobileNav = [
     ["Overview", "home"],
@@ -2793,9 +2785,9 @@ export default function App() {
             </div>
           </div>
           <button className="profile-menu" onClick={() => go("Settings")}>
-            <Avatar name="Amara Okafor" size="sm" />
+            <Avatar name={viewer.name} image={viewer.image} size="sm" />
             <div>
-              <b>Amara Okafor</b>
+              <b>{viewer.name}</b>
               <span>Profile & group settings</span>
             </div>
             <Icon name="more" />
@@ -2833,7 +2825,7 @@ export default function App() {
               <i />
             </button>
             <button className="mobile-avatar">
-              <Avatar name="Amara Okafor" size="sm" />
+              <Avatar name={viewer.name} image={viewer.image} size="sm" />
             </button>
           </div>
         </header>
