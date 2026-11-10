@@ -1,0 +1,35 @@
+name: Verify Next.js 3D interface
+
+on:
+  push:
+    branches:
+      - feat/immersive-3d-experience
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  typecheck-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # Non-secret placeholders for compilation only. No production data is queried.
+      DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/poverty_die?sslmode=require
+      NEON_AUTH_BASE_URL: https://example.com/neondb/auth
+      NEON_AUTH_COOKIE_SECRET: ci-build-placeholder-only-32-characters-not-for-production
+      ALLOWED_EMAILS: demo@example.com
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: TypeScript typecheck
+        run: npm run typecheck
+      - name: Production build
+        run: npm run build
