@@ -52,9 +52,10 @@ Once the feature branch is deployed as a preview (or PRs merged to main and rede
 https://YOUR-VERCEL-DOMAIN/api/health
 ```
 
-- HTTP 200 `{"status":"ready","database":"reachable","neonAuth":"configured_not_login_tested"}`: config present and the DB responded to a read-only query.
-- HTTP 503 `{"status":"configuration_required", ...}`: at least one setting missing/invalid.
-- HTTP 503 `{"status":"unavailable", ...}`: cannot verify the Neon connection or Auth base URL.
+- HTTP 200 `{"status":"ready","database":"reachable","schema":"ready","neonAuth":"configured_not_login_tested"}`: configuration present; Neon connection succeeds and the required application tables exist.
+- HTTP 503 `{"status":"configuration_required", ...}`: at least one required setting is missing or invalid.
+- HTTP 503 `{"status":"migrations_required","database":"reachable","schema":"not_ready", ...}`: Neon is reachable but the required group/custody tables are not installed yet. Review and apply migrations against the correct database branch.
+- HTTP 503 `{"status":"unavailable", ...}`: connection or Auth base URL verification failed.
 
 **A 200 health response does not prove Google login works, the required schema has been migrated, or any financial records are correct.** Test real Google sign-in and friend-to-friend access separately. This endpoint deliberately omits environment values and SQL errors.
 
