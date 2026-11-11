@@ -5,6 +5,7 @@ on:
     branches:
       - feat/immersive-3d-experience
       - feat/live-group-contributions
+      - feat/valuation-unit-foundation
   pull_request:
     branches:
       - main
