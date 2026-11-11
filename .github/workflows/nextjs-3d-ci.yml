@@ -1,9 +1,10 @@
-name: Verify Next.js 3D interface
+name: Verify Next.js live group and 3D
 
 on:
   push:
     branches:
       - feat/immersive-3d-experience
+      - feat/live-group-contributions
   pull_request:
     branches:
       - main
@@ -28,6 +29,10 @@ jobs:
           node-version: "22"
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+      - name: Exact-money regression tests
+        run: npm test
+      - name: Validate Drizzle migration generation
+        run: npm run db:generate
       - name: TypeScript typecheck
         run: npm run typecheck
       - name: Production build
