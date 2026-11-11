@@ -1,7 +1,7 @@
 import "server-only";
 import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { contributions, groups, memberships, profiles } from "@/db/schema";
+import { contributions, custodyAssignments, groups, memberships, profiles, valuationReports } from "@/db/schema";
 import { toKobo, koboToDecimal } from "@/lib/group/money";
 import type { Viewer } from "@/lib/group/security";
 
@@ -37,6 +37,13 @@ export type GroupDashboard = {
   groupPending: string;
   personalVerified: string;
   memberCount: number;
+  custody: Array<{
+    period: string;
+    custodianUserId: string;
+    custodianName: string;
+    reportStatus: "submitted" | "approved" | "rejected" | null;
+    submittedAt: string | null;
+  }>;
 };
 
 /** Only returns a group that the authenticated viewer has joined. */
@@ -54,7 +61,7 @@ export async function loadGroupDashboard(viewer: Viewer): Promise<GroupDashboard
   if (!current) return null;
   const groupId = current.groupId;
 
-  const [memberRows, claimRows] = await Promise.all([
+  const [memberRows, claimRows, custodyRows, reportRows] = await Promise.all([
     db.select({
       userId: memberships.userId,
       role: memberships.role,
@@ -88,6 +95,23 @@ export async function loadGroupDashboard(viewer: Viewer): Promise<GroupDashboard
       .where(eq(contributions.groupId, groupId))
       .orderBy(desc(contributions.createdAt))
       .limit(100),
+    db.select({
+      period: custodyAssignments.period,
+      custodianUserId: custodyAssignments.custodianUserId,
+      custodianName: profiles.displayName,
+    }).from(custodyAssignments)
+      .leftJoin(profiles, eq(profiles.userId, custodyAssignments.custodianUserId))
+      .where(eq(custodyAssignments.groupId, groupId))
+      .orderBy(desc(custodyAssignments.period))
+      .limit(18),
+    db.select({
+      period: valuationReports.period,
+      status: valuationReports.status,
+      submittedAt: valuationReports.submittedAt,
+    }).from(valuationReports)
+      .where(eq(valuationReports.groupId, groupId))
+      .orderBy(desc(valuationReports.period))
+      .limit(18),
   ]);
 
   const members: MemberView[] = memberRows.map(row => ({
@@ -125,5 +149,15 @@ export async function loadGroupDashboard(viewer: Viewer): Promise<GroupDashboard
     groupPending: koboToDecimal(groupPending),
     personalVerified,
     memberCount: members.length,
+    custody: custodyRows.map(row => {
+      const report = reportRows.find(value => value.period === row.period);
+      return {
+        period: row.period,
+        custodianUserId: row.custodianUserId,
+        custodianName: row.custodianName || "Member",
+        reportStatus: report?.status ?? null,
+        submittedAt: report?.submittedAt.toISOString() ?? null,
+      };
+    }),
   };
 }

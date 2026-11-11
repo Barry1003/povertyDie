@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { authClient } from "@/lib/auth/client";
 import { ImmersiveWealth } from "@/components/3d/immersive-wealth";
 import { CharacterAvatar } from "@/components/identity/character-avatar";
@@ -69,10 +70,10 @@ export function GroupSetup({
 
       <section className="mx-auto grid max-w-5xl items-center gap-8 px-5 py-6 sm:px-8 lg:grid-cols-[1fr_1fr]">
         <div>
-          <div className="inline-flex items-center gap-3 rounded-full border border-[#d9e8e0] bg-white px-3 py-2 text-xs shadow-sm">
+          <Link href="/profile" className="inline-flex items-center gap-3 rounded-full border border-[#d9e8e0] bg-white px-3 py-2 text-xs shadow-sm">
             <CharacterAvatar name={viewer.name} seed={viewer.avatarSeed} size="sm" />
-            Signed in as <strong>{viewer.name}</strong>
-          </div>
+            Signed in as <strong>{viewer.name}</strong> · Edit profile
+          </Link>
           <h1 className="mt-7 max-w-xl text-4xl font-extrabold leading-[1.15] tracking-tight sm:text-5xl">
             Your friends. <span className="text-[#14866e]">One shared journey.</span>
           </h1>

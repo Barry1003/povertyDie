@@ -45,3 +45,7 @@ npm run dev
 Database migrations require real Neon and must be reviewed before execution. Front-end compilation in CI uses dummy non-functional environment values. Never claim actual bank verification or end-to-end database tests on a CI build alone. See `docs/phase-2-live-groups.md` and `README.md`.
 
 Environment: `DATABASE_URL`, `NEON_AUTH_BASE_URL`, `NEON_AUTH_COOKIE_SECRET` (server-only). The owner handles Vercel; do not alter its live deployment without their instruction.
+
+## Authentication status
+
+Google OAuth and email/password authentication are owned by managed Neon Auth. The app stores unique username profile handles but does not validate account passwords or expose a public username-to-email mapping. A native managed Neon username/password feature must be verified before enabling that login method. Neon Auth settings and verification mail are configured in Neon; Vercel Production and Preview environment variables are separate. Do not paste secrets into issues or logs.

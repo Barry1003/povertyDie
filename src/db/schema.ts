@@ -1,6 +1,6 @@
 import { relations, sql } from "drizzle-orm";
 import {
-  check, index, integer, numeric, pgTable, text, timestamp, uuid, uniqueIndex,
+  check, index, jsonb, numeric, pgTable, text, timestamp, uuid, uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 /**
@@ -11,11 +11,14 @@ import {
 export const profiles = pgTable("profiles", {
   userId: text("user_id").primaryKey(),
   displayName: text("display_name").notNull(),
+  username: text("username").unique(), // Lowercase canonical username, optional for existing members
   email: text("email").notNull(),
   avatarSeed: text("avatar_seed").notNull().unique(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-});
+}, (t) => [
+  check("canonical_username", sql`${t.username} IS NULL OR ${t.username} ~ '^[a-z][a-z0-9_]{2,23}$'`),
+]);
 
 export const groups = pgTable("groups", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -95,6 +98,93 @@ export const contributionReviews = pgTable("contribution_reviews", {
   note: text("note"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [uniqueIndex("one_review_per_contribution").on(t.contributionId)]);
+
+
+/**
+ * A monthly rotating custodian is accountable for a reconciliation report.
+ * Scheduling does NOT grant permission to confirm a transfer or approve NAV.
+ */
+export const custodyAssignments = pgTable("custody_assignments", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  groupId: uuid("group_id").notNull().references(() => groups.id, { onDelete: "cascade" }),
+  period: text("period").notNull(), // YYYY-MM
+  custodianUserId: text("custodian_user_id").notNull(),
+  scheduledBy: text("scheduled_by").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  uniqueIndex("one_custodian_per_group_period").on(t.groupId, t.period),
+  index("custodian_group_period_idx").on(t.groupId, t.createdAt),
+  check("custody_period_format", sql`${t.period} ~ '^20[0-9]{2}-(0[1-9]|1[0-2])$'`),
+]);
+
+export type ValuationMark = {
+  assetLabel: string;
+  category: string;
+  sourceCurrency: "NGN" | "USD" | "GBP" | "EUR" | "OTHER";
+  amountInSourceCurrency: string;
+  ngnFairValue: string;
+  evidenceReference: string;
+  fxQuoteReference?: string;
+};
+
+/**
+ * An assigned custodian may SUBMIT one report per month. This stores the
+ * reported numbers as an untrusted draft of actual NAV. Nothing in this table
+ * makes its numbers approved, audited or available as member earnings.
+ */
+export const valuationReports = pgTable("valuation_reports", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  groupId: uuid("group_id").notNull().references(() => groups.id, { onDelete: "cascade" }),
+  period: text("period").notNull(),
+  custodianUserId: text("custodian_user_id").notNull(),
+  cashNgn: numeric("cash_ngn", { precision: 18, scale: 2 }).notNull(),
+  liabilitiesNgn: numeric("liabilities_ngn", { precision: 18, scale: 2 }).notNull(),
+  assetMarks: jsonb("asset_marks").$type<ValuationMark[]>().notNull(),
+  statementReference: text("statement_reference").notNull(),
+  notes: text("notes"),
+  status: text("status", { enum: ["submitted", "approved", "rejected"] }).notNull().default("submitted"),
+  submittedAt: timestamp("submitted_at", { withTimezone: true }).notNull().defaultNow(),
+  approvedBy: text("approved_by"),
+  approvedAt: timestamp("approved_at", { withTimezone: true }),
+}, (t) => [
+  uniqueIndex("one_report_per_group_period").on(t.groupId, t.period),
+  index("report_group_submitted_idx").on(t.groupId, t.submittedAt),
+  check("nonnegative_cash", sql`${t.cashNgn} >= 0`),
+  check("nonnegative_liabilities", sql`${t.liabilitiesNgn} >= 0`),
+  check("report_period_format", sql`${t.period} ~ '^20[0-9]{2}-(0[1-9]|1[0-2])$'`),
+]);
+
+/**
+ * APPROVED snapshots will only be inserted after a future, independently
+ * reviewed, transactional NAV settlement process is implemented.
+ * No route currently inserts these. It must never be filled with mock data.
+ */
+export const valuationEvents = pgTable("valuation_events", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  reportId: uuid("report_id").notNull().unique().references(() => valuationReports.id),
+  groupId: uuid("group_id").notNull().references(() => groups.id),
+  approvedBy: text("approved_by").notNull(),
+  approvedAt: timestamp("approved_at", { withTimezone: true }).notNull().defaultNow(),
+  preMoneyNavNgn: numeric("pre_money_nav_ngn", { precision: 18, scale: 2 }).notNull(),
+  closeNavNgn: numeric("close_nav_ngn", { precision: 18, scale: 2 }).notNull(),
+  preMoneyPriceNgn: numeric("pre_money_price_ngn", { precision: 18, scale: 6 }).notNull(),
+  closingPriceNgn: numeric("closing_price_ngn", { precision: 18, scale: 6 }).notNull(),
+  totalIssuedUnits: numeric("total_issued_units", { precision: 30, scale: 8 }).notNull(),
+}, (t) => [index("approved_event_group_idx").on(t.groupId, t.approvedAt)]);
+
+export const unitIssuances = pgTable("unit_issuances", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  groupId: uuid("group_id").notNull().references(() => groups.id),
+  valuationEventId: uuid("valuation_event_id").notNull().references(() => valuationEvents.id),
+  contributionId: uuid("contribution_id").notNull().unique().references(() => contributions.id),
+  memberId: text("member_id").notNull(),
+  amountNgn: numeric("amount_ngn", { precision: 18, scale: 2 }).notNull(),
+  unitsIssued: numeric("units_issued", { precision: 30, scale: 8 }).notNull(),
+  issuedAt: timestamp("issued_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  index("unit_issuance_member_idx").on(t.groupId, t.memberId),
+  check("positive_unit_issuance", sql`${t.unitsIssued} > 0`),
+]);
 
 export const groupRelations = relations(groups, ({ many }) => ({
   memberships: many(memberships),

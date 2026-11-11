@@ -5,9 +5,12 @@ on:
     branches:
       - feat/immersive-3d-experience
       - feat/live-group-contributions
+      - feat/valuation-unit-foundation
+      - "fix/**"
   pull_request:
     branches:
       - main
+      - feat/valuation-unit-foundation
 
 permissions:
   contents: read

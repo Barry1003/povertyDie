@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth/server";
 // Signed-out visitors can reach sign-in; other app routes need a session.
 export default auth.middleware({
   loginUrl: "/sign-in",
-  publicRoutes: ["/sign-in"],
+  publicRoutes: ["/sign-in", "/sign-up", "/forgot-password", "/reset-password", "/api/health"],
 });
 
 export const config = {

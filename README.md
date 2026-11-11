@@ -4,9 +4,9 @@ A small, private investment group for friends. **Next.js 16, React 19, Tailwind 
 
 ## What the live app does
 
-- Google login via Neon Auth. Google sign-up is open, but a Google identity by itself **cannot read another group's financial data**.
+- Google and email/password sign-in are managed by Neon Auth. Authentication alone **cannot read another group's financial data**.
 - An authenticated person can create their first group and becomes its admin.
-- The admin can issue a cryptographically random, one-time invite link (expires in seven days). Each friend signs in with Google and redeems an invitation to join the same group.
+- The admin can issue a cryptographically random, one-time invite link (expires in seven days). Each friend signs in with Google or email/password and redeems an invitation to join the same group.
 - All group members share a **single live overview and contribution register** with member avatars, verified contributions, and submitted amounts awaiting verification.
 - A member submits a manual transfer reference and amount. The claim remains **pending** until another authorized person checks the receiving account outside the app and records a review.
 - The admin can appoint reviewers. A reviewer or admin **cannot verify their own claim**.
@@ -27,6 +27,13 @@ Google OAuth credentials are managed by **Neon Auth**; do not add Auth.js or app
 
 Neon Auth's identity tables are managed in the `neon_auth` schema; Drizzle only creates our application tables. Use the database and Auth URL from the **same Neon branch**.
 
+## Authentication and deployment notes
+
+- Google, email/password registration and login, and password recovery use Neon Auth.
+- Unique user handles are saved in the app's profile records. Username/password login is not enabled: the managed Neon Auth client must natively support this before it can be offered.
+- Set the necessary environment variable names in both **Production** and **Preview** when deploying feature branches. Existing deployment environments do not inherit newly added variables; redeploy.
+- Configure trusted domains and email/password settings in Neon Auth. Production may require its own Google OAuth credentials and email provider configured within Neon.
+- The feature branch's /api/health route checks database connectivity and required app tables; it cannot validate a complete Google or email login flow.
 ## Local run / database setup
 
 Use Node.js 22+.
@@ -50,7 +57,7 @@ Important: migration generation uses `drizzle.config.ts` and creates files under
 ## Live group rules
 
 - Each person belongs to **one group** in this MVP. All group finance endpoints require an authenticated user and membership in that exact group.
-- A valid Google account without a private invitation sees only the create/join screen.
+- Any authenticated account without a private invitation sees only the create/join screen.
 - Group admins manage invitations and appoint independent reviewers.
 - Submitted payment claims have a status `submitted`, `verified` or `rejected`, with an audit record for each review.
 - Verified contribution totals include only `verified` records. Submitted and rejected transfers are excluded.
