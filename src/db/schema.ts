@@ -17,7 +17,8 @@ export const profiles = pgTable("profiles", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [
-  check("canonical_username", sql`${t.username} IS NULL OR ${t.username} ~ '^[a-z][a-z0-9_]{2,23}
+  check("canonical_username", sql`${t.username} IS NULL OR ${t.username} ~ '^[a-z][a-z0-9_]{2,23}$'`),
+]);
 
 export const groups = pgTable("groups", {
   id: uuid("id").defaultRandom().primaryKey(),
