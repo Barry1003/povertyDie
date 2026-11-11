@@ -30,14 +30,25 @@ export async function GET() {
     if (authUrl.protocol !== "https:") throw new Error("Invalid Neon Auth URL");
 
     const sql = neon(DATABASE_URL);
-    const rows = await sql`select 1 as ready`;
-    if (rows.length !== 1 || rows[0]?.ready !== 1) throw new Error("Database health check failed");
+    const rows = await sql`
+      select
+        to_regclass('public.groups') is not null as groups_ready,
+        to_regclass('public.contributions') is not null as contributions_ready,
+        to_regclass('public.custody_assignments') is not null as custody_ready,
+        to_regclass('public.valuation_reports') is not null as reports_ready
+    `;
+    if (rows.length !== 1) throw new Error("Database health check failed");
+    const schemaReady = rows[0].groups_ready === true &&
+      rows[0].contributions_ready === true &&
+      rows[0].custody_ready === true &&
+      rows[0].reports_ready === true;
 
     return NextResponse.json({
-      status: "ready",
+      status: schemaReady ? "ready" : "migrations_required",
       database: "reachable",
+      schema: schemaReady ? "ready" : "not_ready",
       neonAuth: "configured_not_login_tested",
-    }, { status: 200, headers });
+    }, { status: schemaReady ? 200 : 503, headers });
   } catch {
     // Do not expose driver errors, URLs or credentials to public callers.
     return NextResponse.json({
