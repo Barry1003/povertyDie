@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ImmersiveWealth } from "@/components/3d/immersive-wealth";
 import { CustodyWorkspace } from "@/components/group/custody-workspace";
 import { CharacterAvatar } from "@/components/identity/character-avatar";
@@ -114,7 +115,7 @@ export function GroupHub({ data }: { data: GroupDashboard }) {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <CharacterAvatar name={data.viewer.name} seed={data.viewer.avatarSeed} size="sm" />
+            <Link href="/profile" aria-label="Edit your member profile" title="My profile"><CharacterAvatar name={data.viewer.name} seed={data.viewer.avatarSeed} size="sm" /></Link>
             <button type="button" className="text-xs font-semibold text-[#507266] underline underline-offset-4" onClick={async () => {
               await authClient.signOut();
               window.location.assign("/sign-in");
