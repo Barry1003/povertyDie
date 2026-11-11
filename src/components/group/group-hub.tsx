@@ -3,12 +3,13 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { ImmersiveWealth } from "@/components/3d/immersive-wealth";
+import { CustodyWorkspace } from "@/components/group/custody-workspace";
 import { CharacterAvatar } from "@/components/identity/character-avatar";
 import { authClient } from "@/lib/auth/client";
 import type { GroupDashboard } from "@/lib/group/queries";
 import { formatNaira } from "@/lib/group/money";
 
-type Tab = "overview" | "friends" | "activity";
+type Tab = "overview" | "friends" | "activity" | "custody";
 
 async function mutation(path: string, data: Record<string, unknown>, method = "POST") {
   const response = await fetch(path, {
@@ -125,7 +126,7 @@ export function GroupHub({ data }: { data: GroupDashboard }) {
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-8">
         <nav aria-label="Group sections" className="mb-6 inline-flex max-w-full gap-1 overflow-x-auto rounded-2xl border border-[#dcebe3] bg-white p-1.5">
           {([
-            ["overview", "Overview"], ["friends", "Friends & contributions"], ["activity", "Contributions"],
+            ["overview", "Overview"], ["friends", "Friends & contributions"], ["activity", "Contributions"], ["custody", "Custody & reports"],
           ] as [Tab, string][]).map(([key, label]) =>
             <button key={key} type="button" onClick={() => setTab(key)}
               aria-current={tab === key ? "page" : undefined}
@@ -271,6 +272,8 @@ export function GroupHub({ data }: { data: GroupDashboard }) {
               </div>)}</div>}
           </section>
         </>}
+
+        {tab === "custody" && <CustodyWorkspace data={data} />}
 
         {data.viewer.role === "admin" && <section className="mt-7 rounded-2xl border border-[#d8e9df] bg-[#eaf5ee] p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
