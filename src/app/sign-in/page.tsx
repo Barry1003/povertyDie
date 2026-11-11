@@ -1,43 +1,32 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/server";
+import { AuthShell } from "@/components/auth/auth-shell";
+import { EmailAuthForm } from "@/components/auth/email-auth-form";
 import { GoogleSignIn } from "@/components/google-sign-in";
-import { ImmersiveWealth } from "@/components/3d/immersive-wealth";
+import { safeReturnTo } from "@/lib/auth/redirect";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Google sign-in | Poverty Die" };
+export const metadata = { title: "Sign in | Poverty Die" };
 
-export default async function SignInPage() {
+export default async function SignInPage({
+  searchParams,
+}: { searchParams: Promise<{ next?: string | string[] }> }) {
   const { data: session } = await auth.getSession();
   if (session?.user) redirect("/");
+
+  const params = await searchParams;
+  const returnTo = safeReturnTo(params.next);
   return (
-    <main className="auth-shell">
-      <section className="auth-brand">
-        <div className="logo">
-          <span className="logo-mark"><span>P</span></span>
-          <div><b>POVERTY DIE</b><small>WEALTH COLLECTIVE</small></div>
-        </div>
-        <div className="auth-copy">
-          <span className="badge dark">PRIVATE WEALTH COLLECTIVE</span>
-          <h1>Build wealth together. <em>Track every step.</em></h1>
-          <p>A transparent home for friends to track shared investments, contributions and progress.</p>
-        </div>
-        <div className="sign-in-sculpture">
-          <ImmersiveWealth variant="welcome" />
-          <span className="sign-in-sculpture-label">A shared vision, shaped together.</span>
-        </div>
-        <small>Open Google sign-up · Private financial groups</small>
-      </section>
-      <section className="auth-form">
-        <div className="mobile-signin-brand">
-          <div className="logo"><span className="logo-mark"><span>P</span></span><div><b>POVERTY DIE</b><small>WEALTH COLLECTIVE</small></div></div>
-          <ImmersiveWealth variant="welcome" className="mobile-signin-sculpture" />
-        </div>
-        <span className="kicker">WELCOME BACK</span>
-        <h2>Sign in to Poverty Die</h2>
-        <p>Continue with any Google account to sign in or create your profile.</p>
-        <GoogleSignIn />
-        <small className="secure">Registration is open. Access to live group financial records will require membership.</small>
-      </section>
-    </main>
+    <AuthShell eyebrow="Welcome back" title="Sign in to Poverty Die"
+      description="Access your shared investment circle with email and password, or continue securely with Google.">
+      <EmailAuthForm mode="sign-in" returnTo={returnTo} />
+      <div className="my-5 flex items-center gap-3 text-xs text-[#789083]">
+        <span className="h-px flex-1 bg-[#d8e8de]" />or<span className="h-px flex-1 bg-[#d8e8de]" />
+      </div>
+      <GoogleSignIn callbackURL={returnTo} />
+      <p className="mt-5 text-center text-xs text-[#678174]">
+        Usernames are unique profile handles. Managed Neon Auth currently uses your email for password sign-in.
+      </p>
+    </AuthShell>
   );
 }
