@@ -13,7 +13,10 @@ export function GoogleSignIn({ callbackURL = "/" }: { callbackURL?: string }) {
     setPending(true);
     setError(null);
     try {
-      const result = await authClient.signIn.social({ provider: "google", callbackURL: next });
+      // Use a public handoff route so Neon Auth can finish exchanging its OAuth
+      // verifier before the protected home route is accessed.
+      const handoff = `/auth/callback?next=${encodeURIComponent(next)}`;
+      const result = await authClient.signIn.social({ provider: "google", callbackURL: handoff });
       if (result.error) {
         setError(result.error.message || "Could not sign in with Google.");
         setPending(false);
