@@ -9,8 +9,8 @@ export type WealthSceneVariant = "welcome" | "overview" | "onboarding" | "celebr
 
 const GOLD = "#e5b968";
 const LIGHT_GOLD = "#f3d792";
-const DEEP_GREEN = "#0d695a";
-const MINT = "#7de0c6";
+const DEEP_PURPLE = "#601C9B";
+const LAVENDER = "#B186D7";
 
 function CoinStack({
   x,
@@ -50,7 +50,7 @@ function MemberOrbit() {
     <group rotation={[0.33, -0.16, 0.24]}>
       <mesh>
         <torusGeometry args={[1.87, 0.024, 8, 96]} />
-        <meshStandardMaterial color={MINT} metalness={0.5} roughness={0.22} emissive="#135347" emissiveIntensity={0.4} />
+        <meshStandardMaterial color={LAVENDER} metalness={0.5} roughness={0.22} emissive="#351056" emissiveIntensity={0.4} />
       </mesh>
       {Array.from({ length: 9 }, (_, index) => {
         const angle = (index / 9) * Math.PI * 2;
@@ -59,10 +59,10 @@ function MemberOrbit() {
             <mesh>
               <sphereGeometry args={[index % 3 === 0 ? 0.105 : 0.074, 12, 12]} />
               <meshStandardMaterial
-                color={index % 3 === 0 ? LIGHT_GOLD : MINT}
+                color={index % 3 === 0 ? LIGHT_GOLD : LAVENDER}
                 metalness={0.62}
                 roughness={0.27}
-                emissive={index % 3 === 0 ? "#5d3f0b" : "#144d3f"}
+                emissive={index % 3 === 0 ? "#5d3f0b" : "#330F52"}
                 emissiveIntensity={0.24}
               />
             </mesh>
@@ -92,10 +92,10 @@ function WealthSculpture({ variant }: { variant: WealthSceneVariant }) {
     <group scale={celebratory ? 1.1 : 1}>
       <group ref={root}>
         <RoundedBox args={[3.55, 0.23, 1.9]} radius={0.11} smoothness={4} position={[0, -1.42, 0]}>
-          <meshStandardMaterial color="#20574c" metalness={0.64} roughness={0.32} />
+          <meshStandardMaterial color="#601C9B" metalness={0.64} roughness={0.32} />
         </RoundedBox>
         <RoundedBox args={[3.18, 0.08, 1.61]} radius={0.055} smoothness={3} position={[0, -1.29, 0]}>
-          <meshStandardMaterial color="#3e927a" metalness={0.47} roughness={0.4} />
+          <meshStandardMaterial color="#6B349C" metalness={0.47} roughness={0.4} />
         </RoundedBox>
 
         <CoinStack x={-1.05} z={0.33} count={4} offset={0.12} />
@@ -114,7 +114,7 @@ function WealthSculpture({ variant }: { variant: WealthSceneVariant }) {
             <mesh rotation={[0.22, -0.4, 0.14]}>
               <icosahedronGeometry args={[0.75, 1]} />
               <meshPhysicalMaterial
-                color="#39aa8d"
+                color="#7539AA"
                 metalness={0.3}
                 roughness={0.13}
                 transmission={0.14}
@@ -159,7 +159,7 @@ export function WealthScene({ variant }: { variant: WealthSceneVariant }) {
     >
       <ambientLight intensity={1.65} />
       <directionalLight position={[3.2, 5.1, 5]} color="#ffffff" intensity={3} />
-      <pointLight position={[-3, 1.4, 3]} color="#79ddc2" intensity={23} distance={12} />
+      <pointLight position={[-3, 1.4, 3]} color="#AE81D5" intensity={23} distance={12} />
       <pointLight position={[2.8, -1.2, 1]} color="#f6c66d" intensity={13} distance={10} />
       <WealthSculpture variant={variant} />
     </Canvas>
