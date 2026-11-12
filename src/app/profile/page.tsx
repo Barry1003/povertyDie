@@ -14,7 +14,7 @@ export default async function ProfilePage() {
   const [profile] = await db.select({ username: profiles.username })
     .from(profiles).where(eq(profiles.userId, viewer.id)).limit(1);
 
-  return <main className="min-h-screen bg-[#f5faf7] px-4 py-12 text-[#173d32]">
+  return <main className="min-h-screen bg-[#FAF5FF] px-4 py-12 text-[#2C0D47]">
     <div className="mx-auto max-w-xl">
       <UsernameSettings name={viewer.name} email={viewer.email}
         avatarSeed={viewer.avatarSeed} initialUsername={profile?.username ?? null} />
