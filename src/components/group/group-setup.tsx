@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/brand-logo";
 "use client";
 
 import { useState, type FormEvent } from "react";
@@ -58,10 +59,7 @@ export function GroupSetup({
   return (
     <main className="min-h-screen bg-[#f5faf7] text-[#183932]">
       <header className="mx-auto flex max-w-5xl items-center justify-between px-5 py-6 sm:px-8">
-        <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#16856e] text-xl font-black text-white">P</span>
-          <div><p className="text-lg font-black tracking-tight">Poverty Die</p><p className="text-xs text-[#678178]">Friends building wealth together</p></div>
-        </div>
+        <BrandLogo />
         <button type="button" className="text-sm text-[#4b7568] underline underline-offset-4" onClick={async () => {
           await authClient.signOut();
           window.location.assign("/sign-in");
