@@ -49,6 +49,8 @@ export function GroupHub({ data }: { data: GroupDashboard }) {
   const [busy, setBusy] = useState("");
   const [message, setMessage] = useState("");
   const [inviteLink, setInviteLink] = useState("");
+  const [joinCode, setJoinCode] = useState(data.group.joinCode ?? "");
+  const [joinCodeEnabled, setJoinCodeEnabled] = useState(data.group.joinCodeEnabled);
   const [showContribution, setShowContribution] = useState(false);
   const [amount, setAmount] = useState("25000");
   const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
@@ -85,6 +87,26 @@ export function GroupHub({ data }: { data: GroupDashboard }) {
       const result = await mutation("/api/groups/invitations", { groupId: data.group.id });
       setInviteLink(result.link);
     });
+  }
+
+  function manageJoinCode(action: "regenerate" | "disable" | "enable") {
+    void run("group-code", async () => {
+      const result = await mutation("/api/groups/join-code", { groupId: data.group.id, action }, "PATCH");
+      setJoinCode(result.code);
+      setJoinCodeEnabled(result.enabled);
+      setMessage(action === "regenerate" ? "Group code regenerated. The old code no longer works." :
+        action === "disable" ? "Group code disabled. Existing members keep their access." : "Group code enabled.");
+      router.refresh();
+    });
+  }
+
+  function copyGroupCode(asLink: boolean) {
+    const value = asLink
+      ? new URL("/?invite=" + encodeURIComponent(joinCode), window.location.origin).toString()
+      : joinCode;
+    void navigator.clipboard.writeText(value)
+      .then(() => setMessage(asLink ? "Group invitation link copied." : "Group code copied."))
+      .catch(() => setMessage("Unable to copy automatically. Select and copy the code above."));
   }
 
   function setRole(userId: string, role: "member" | "reviewer") {
@@ -284,6 +306,20 @@ export function GroupHub({ data }: { data: GroupDashboard }) {
             <button type="button" disabled={!!busy} onClick={createInvite}
               className="rounded-xl bg-[#7C3AED] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-60">
               {busy === "invite" ? "Creating…" : "Create invite link"}</button>
+          </div>
+          <div className="mt-4 rounded-2xl border border-[#D6BFEA] bg-white p-4">
+            <h4 className="text-sm font-extrabold">Your reusable group code</h4>
+            <p className="mt-1 text-xs text-[#7036A3]">Share privately with friends. Unlike a one-use link, this code can admit multiple members until disabled or replaced.</p>
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <input aria-label="Reusable group code" readOnly value={joinCode} className="w-48 rounded-xl border border-[#CFB5E6] bg-[#FAF5FF] px-3 py-2 text-center font-mono font-bold tracking-widest" />
+              <span className="text-xs font-semibold text-[#6B349C]">{joinCodeEnabled ? "Active" : "Disabled"}</span>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button type="button" disabled={!!busy || !joinCodeEnabled} onClick={() => copyGroupCode(false)} className="rounded-xl border border-[#BD98DD] px-3 py-2 text-xs font-bold disabled:opacity-50">Copy code</button>
+              <button type="button" disabled={!!busy || !joinCodeEnabled} onClick={() => copyGroupCode(true)} className="rounded-xl border border-[#BD98DD] px-3 py-2 text-xs font-bold disabled:opacity-50">Copy invite link</button>
+              <button type="button" disabled={!!busy} onClick={() => { if (window.confirm("Replace the group code? Previously shared codes will stop working.")) manageJoinCode("regenerate"); }} className="rounded-xl border border-[#BD98DD] px-3 py-2 text-xs font-bold disabled:opacity-50">{busy === "group-code" ? "Updating…" : "Regenerate code"}</button>
+              <button type="button" disabled={!!busy} onClick={() => manageJoinCode(joinCodeEnabled ? "disable" : "enable")} className="rounded-xl border border-[#BD98DD] px-3 py-2 text-xs font-bold disabled:opacity-50">{joinCodeEnabled ? "Disable code" : "Enable code"}</button>
+            </div>
           </div>
           {inviteLink && <div className="mt-4 flex flex-wrap gap-2">
             <input aria-label="Invitation link" readOnly value={inviteLink}

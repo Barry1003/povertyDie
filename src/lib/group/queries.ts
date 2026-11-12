@@ -29,7 +29,7 @@ export type ContributionView = {
 };
 
 export type GroupDashboard = {
-  group: { id: string; name: string };
+  group: { id: string; name: string; joinCode: string | null; joinCodeEnabled: boolean };
   viewer: Viewer & { role: "member" | "admin" | "reviewer" };
   members: MemberView[];
   contributions: ContributionView[];
@@ -51,6 +51,8 @@ export async function loadGroupDashboard(viewer: Viewer): Promise<GroupDashboard
   const [current] = await db.select({
     groupId: groups.id,
     groupName: groups.name,
+    joinCode: groups.joinCode,
+    joinCodeEnabled: groups.joinCodeEnabled,
     role: memberships.role,
   }).from(memberships)
     .innerJoin(groups, eq(groups.id, memberships.groupId))
@@ -141,7 +143,7 @@ export async function loadGroupDashboard(viewer: Viewer): Promise<GroupDashboard
   const personalVerified = members.find(member => member.userId === viewer.id)?.verified ?? "0";
 
   return {
-    group: { id: groupId, name: current.groupName },
+    group: { id: groupId, name: current.groupName, joinCode: current.role === "admin" ? current.joinCode : null, joinCodeEnabled: current.role === "admin" && current.joinCodeEnabled },
     viewer: { ...viewer, role: current.role },
     members,
     contributions: claims,

@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
+import { generateGroupJoinCode } from "@/lib/group/join-code";
 import { getViewer, hasReturnedRow, readJson, sameOrigin, textInput } from "@/lib/group/security";
 
 export const runtime = "nodejs";
@@ -19,11 +20,12 @@ export async function POST(request: NextRequest) {
   // Do not allow a signed-in user to start another group while already a member.
   const groupId = crypto.randomUUID();
   const membershipId = crypto.randomUUID();
+  const joinCode = generateGroupJoinCode();
   try {
     const result = await db.execute(sql`
       WITH created AS (
-        INSERT INTO "groups" ("id", "name", "created_by")
-        SELECT ${groupId}::uuid, ${name}, ${viewer.id}
+        INSERT INTO "groups" ("id", "name", "created_by", "join_code")
+        SELECT ${groupId}::uuid, ${name}, ${viewer.id}, ${joinCode}
         WHERE NOT EXISTS (
           SELECT 1 FROM "memberships" WHERE "user_id" = ${viewer.id}
         )

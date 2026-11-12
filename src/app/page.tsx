@@ -11,12 +11,15 @@ export default async function HomePage({
 }: {
   searchParams: Promise<{ invite?: string | string[] }>;
 }) {
+  const params = await searchParams;
   const viewer = await getViewer();
-  if (!viewer) redirect("/sign-in");
+  if (!viewer) {
+    const invite = typeof params.invite === "string" ? params.invite : null;
+    redirect(invite ? "/sign-in?next=" + encodeURIComponent("/?invite=" + encodeURIComponent(invite)) : "/sign-in");
+  }
 
   const dashboard = await loadGroupDashboard(viewer);
   if (!dashboard) {
-    const params = await searchParams;
     return (
       <GroupSetup
         viewer={viewer}
