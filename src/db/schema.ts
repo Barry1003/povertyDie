@@ -1,6 +1,6 @@
 import { relations, sql } from "drizzle-orm";
 import {
-  check, index, jsonb, numeric, pgTable, text, timestamp, uuid, uniqueIndex,
+  boolean, check, index, jsonb, numeric, pgTable, text, timestamp, uuid, uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 /**
@@ -23,6 +23,8 @@ export const profiles = pgTable("profiles", {
 export const groups = pgTable("groups", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull(),
+  joinCode: text("join_code").notNull().unique(),
+  joinCodeEnabled: boolean("join_code_enabled").notNull().default(true),
   createdBy: text("created_by").notNull().unique(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

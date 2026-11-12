@@ -5,7 +5,7 @@ Private friends' investment record app. Runtime: **Next.js 16 App Router**, **Re
 ## Current application
 
 - `src/app/page.tsx` — active, fully server-guarded, Neon-backed group entry.
-- `src/components/group/group-setup.tsx` — create group, join with one-use invitation.
+- `src/components/group/group-setup.tsx` — create group; join with one-use invitation or reusable admin-managed code.
 - `src/components/group/group-hub.tsx` — live shared dashboard with verified and pending contributions, member summaries and reviewer UI.
 - `src/lib/group/security.ts` — Neon Auth session and group-role checks.
 - `src/lib/group/queries.ts` — membership-filtered queries returning the active private group, all member totals, and recent claims.
@@ -20,7 +20,7 @@ Private friends' investment record app. Runtime: **Next.js 16 App Router**, **Re
 ## Security invariants (non-negotiable)
 
 1. Any Google identity can authenticate with Neon Auth, but **sign-in alone never authorizes access to financial records**. Every read/write is scoped to a verified group membership.
-2. A single-use invite is random, SHA-256 hashed in DB, expires in seven days, consumed atomically.
+2. A single-use invite is random, SHA-256 hashed in DB, expires in seven days, consumed atomically. Separately, each group has a high-entropy reusable code, visible to its admin only; code disabling/regeneration is server-authorized and does not change existing memberships.
 3. A user belongs to exactly one private group in this initial MVP.
 4. Role changes and invitation creation require a group `admin`.
 5. A `reviewer` or `admin` may verify **other** members' submitted claims only. Review must follow independent inspection of the receiving bank records. Every review has an immutable audit entry.

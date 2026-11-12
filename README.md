@@ -6,7 +6,7 @@ A small, private investment group for friends. **Next.js 16, React 19, Tailwind 
 
 - Google and email/password sign-in are managed by Neon Auth. Authentication alone **cannot read another group's financial data**.
 - An authenticated person can create their first group and becomes its admin.
-- The admin can issue a cryptographically random, one-time invite link (expires in seven days). Each friend signs in with Google or email/password and redeems an invitation to join the same group.
+- Each group also has a 12-character reusable join code that its administrator can copy, disable, or regenerate. The existing cryptographically random, one-time invite links (seven-day expiry) continue to work. Members authenticate before redeeming either form.
 - All group members share a **single live overview and contribution register** with member avatars, verified contributions, and submitted amounts awaiting verification.
 - A member submits a manual transfer reference and amount. The claim remains **pending** until another authorized person checks the receiving account outside the app and records a review.
 - The admin can appoint reviewers. A reviewer or admin **cannot verify their own claim**.
