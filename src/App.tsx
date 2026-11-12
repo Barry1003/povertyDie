@@ -1,5 +1,6 @@
-import { BrandLogo } from "@/components/brand/brand-logo";
 "use client";
+
+import { BrandLogo } from "@/components/brand/brand-logo";
 
 import { useMemo, useState } from "react";
 import { authClient } from "@/lib/auth/client";
