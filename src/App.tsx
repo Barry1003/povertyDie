@@ -330,8 +330,8 @@ function LineChart({ personal = false }: { personal?: boolean }) {
       >
         <defs>
           <linearGradient id={personal ? "area2" : "area"} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#16a385" stopOpacity=".24" />
-            <stop offset="1" stopColor="#16a385" stopOpacity="0" />
+            <stop offset="0" stopColor="#8B5CF6" stopOpacity=".24" />
+            <stop offset="1" stopColor="#8B5CF6" stopOpacity="0" />
           </linearGradient>
         </defs>
         {[24, 47, 70, 93].map((y) => (
