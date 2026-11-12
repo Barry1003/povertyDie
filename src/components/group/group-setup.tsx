@@ -1,5 +1,6 @@
-import { BrandLogo } from "@/components/brand/brand-logo";
 "use client";
+
+import { BrandLogo } from "@/components/brand/brand-logo";
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
