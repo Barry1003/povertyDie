@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { authClient } from "@/lib/auth/client";
 
-const input = "mt-2 block w-full rounded-xl border border-[#cbded3] bg-white px-4 py-3 text-sm outline-offset-2 focus:border-[#16856e]";
+const input = "mt-2 block w-full rounded-xl border border-[#DDD6FE] bg-white px-4 py-3 text-sm outline-offset-2 focus:border-[#7C3AED]";
 
 export function PasswordRecovery({ mode, token }: { mode: "request" | "reset"; token?: string }) {
   const [email, setEmail] = useState("");
@@ -69,19 +69,19 @@ export function PasswordRecovery({ mode, token }: { mode: "request" | "reset"; t
           <input id="confirm-new-password" type={show ? "text" : "password"} autoComplete="new-password"
             minLength={12} maxLength={128} required className={input} value={confirm} onChange={e => setConfirm(e.target.value)} />
         </label>
-        <label className="flex items-center gap-2 text-xs text-[#577366]">
+        <label className="flex items-center gap-2 text-xs text-[#6A1FAB]">
           <input type="checkbox" checked={show} onChange={e => setShow(e.target.checked)} /> Show passwords
         </label>
       </>}
       {error && <p className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700" role="alert">{error}</p>}
-      {notice && <p className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-[#22684d]" role="status">{notice}</p>}
+      {notice && <p className="rounded-xl border border-violet-200 bg-violet-50 p-3 text-sm text-[#601C9B]" role="status">{notice}</p>}
       <button type="submit" disabled={busy || (mode === "reset" && !token)}
-        className="w-full rounded-xl bg-[#16856e] px-5 py-3 font-bold text-white disabled:opacity-50">
+        className="w-full rounded-xl bg-[#7C3AED] px-5 py-3 font-bold text-white disabled:opacity-50">
         {busy ? "Please wait…" : mode === "request" ? "Send reset link" : "Update password"}
       </button>
       <p className="text-center text-xs">
-        <Link className="font-semibold text-[#16856e] hover:underline" href="/sign-in">Back to sign in</Link>
-        {mode === "reset" && <> · <Link className="font-semibold text-[#16856e] hover:underline" href="/forgot-password">Request a new link</Link></>}
+        <Link className="font-semibold text-[#7C3AED] hover:underline" href="/sign-in">Back to sign in</Link>
+        {mode === "reset" && <> · <Link className="font-semibold text-[#7C3AED] hover:underline" href="/forgot-password">Request a new link</Link></>}
       </p>
     </form>
   );
