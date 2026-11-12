@@ -13,7 +13,8 @@ export function safeReturnTo(value: unknown): string {
       parsed.pathname.startsWith("/sign-in") ||
       parsed.pathname.startsWith("/sign-up") ||
       parsed.pathname.startsWith("/forgot-password") ||
-      parsed.pathname.startsWith("/reset-password")) return "/";
+      parsed.pathname.startsWith("/reset-password") ||
+      parsed.pathname.startsWith("/auth/callback")) return "/";
     return parsed.pathname + parsed.search;
   } catch {
     return "/";

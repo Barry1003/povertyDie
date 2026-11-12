@@ -10,7 +10,7 @@ describe("authentication redirect safety", () => {
   });
   it("blocks external redirects, auth APIs and control chars", () => {
     for (const url of ["https://evil.example", "//evil.example", "/\\evil", "/api/me",
-      "/sign-in", "/forgot-password", "/reset-password?token=x", "/\nevil", null, {}]) {
+      "/sign-in", "/forgot-password", "/reset-password?token=x", "/auth/callback?next=%2F", "/\nevil", null, {}]) {
       assert.equal(safeReturnTo(url), "/");
     }
   });
