@@ -37,15 +37,15 @@ export function UsernameSettings({
     } finally { setBusy(false); }
   }
 
-  return <div className="rounded-3xl border border-[#d6e7dd] bg-white p-6 shadow-[0_15px_45px_rgba(19,58,40,0.06)] sm:p-8">
-    <Link href="/" className="text-xs font-bold text-[#16856e] hover:underline">← Back to your group</Link>
+  return <div className="rounded-3xl border border-[#E0CEEF] bg-white p-6 shadow-[0_15px_45px_rgba(19,58,40,0.06)] sm:p-8">
+    <Link href="/" className="text-xs font-bold text-[#7C3AED] hover:underline">← Back to your group</Link>
     <h1 className="mt-4 text-2xl font-extrabold tracking-tight">Your member profile</h1>
-    <div className="mt-6 flex items-center gap-4 rounded-2xl bg-[#f1f7f2] p-4">
+    <div className="mt-6 flex items-center gap-4 rounded-2xl bg-[#F4EDFB] p-4">
       <CharacterAvatar name={name} seed={avatarSeed} size="lg" />
       <div className="min-w-0">
         <strong className="block truncate text-base">{name}</strong>
-        <span className="mt-1 block text-xs text-[#648276]">{email}</span>
-        <span className="mt-1 block text-xs font-bold text-[#16856e]">{saved ? `@${saved}` : "No username chosen"}</span>
+        <span className="mt-1 block text-xs text-[#7739AC]">{email}</span>
+        <span className="mt-1 block text-xs font-bold text-[#7C3AED]">{saved ? `@${saved}` : "No username chosen"}</span>
       </div>
     </div>
     <form onSubmit={submit} className="mt-6 space-y-3">
@@ -53,16 +53,16 @@ export function UsernameSettings({
       <input id="preferred-username" value={username} onChange={event => setUsername(event.target.value)}
         autoComplete="username" minLength={3} maxLength={24} required
         pattern="[a-zA-Z][a-zA-Z0-9_]{2,23}"
-        className="w-full rounded-xl border border-[#cbded3] px-4 py-3 text-sm focus:border-[#16856e]"
+        className="w-full rounded-xl border border-[#DDD6FE] px-4 py-3 text-sm focus:border-[#7C3AED]"
         placeholder="e.g. ishola1003" />
-      <p className="text-xs leading-relaxed text-[#698377]">
+      <p className="text-xs leading-relaxed text-[#7A3BB1]">
         Usernames are unique, case-insensitive group handles. Password login uses your Neon Auth email address.
         We will only enable username/password login when the managed authentication provider offers it safely.
       </p>
       {error && <p role="alert" className="rounded-xl bg-rose-50 p-3 text-xs text-rose-700">{error}</p>}
-      {message && <p role="status" className="rounded-xl bg-emerald-50 p-3 text-xs text-emerald-800">{message}</p>}
+      {message && <p role="status" className="rounded-xl bg-violet-50 p-3 text-xs text-violet-800">{message}</p>}
       <button disabled={busy} type="submit"
-        className="rounded-xl bg-[#16856e] px-5 py-3 text-sm font-bold text-white disabled:opacity-50">
+        className="rounded-xl bg-[#7C3AED] px-5 py-3 text-sm font-bold text-white disabled:opacity-50">
         {busy ? "Saving…" : "Save username"}
       </button>
     </form>

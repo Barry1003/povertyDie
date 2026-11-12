@@ -1,5 +1,7 @@
 "use client";
 
+import { BrandLogo } from "@/components/brand/brand-logo";
+
 import { useMemo, useState } from "react";
 import { authClient } from "@/lib/auth/client";
 import { ImmersiveWealth } from "@/components/3d/immersive-wealth";
@@ -219,19 +221,7 @@ const primaryNav = [
 ] as [string, IconName][];
 
 function Logo({ small = false }: { small?: boolean }) {
-  return (
-    <div className="logo">
-      <span className="logo-mark">
-        <span>P</span>
-      </span>
-      {!small && (
-        <div>
-          <b>POVERTY DIE</b>
-          <small>WEALTH COLLECTIVE</small>
-        </div>
-      )}
-    </div>
-  );
+  return <div className="logo"><BrandLogo compact={small} size="sm" /></div>;
 }
 function Badge({ children, tone = "neutral" }: { children: React.ReactNode; tone?: string }) {
   return <span className={`badge ${tone}`}>{children}</span>;
@@ -340,8 +330,8 @@ function LineChart({ personal = false }: { personal?: boolean }) {
       >
         <defs>
           <linearGradient id={personal ? "area2" : "area"} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#16a385" stopOpacity=".24" />
-            <stop offset="1" stopColor="#16a385" stopOpacity="0" />
+            <stop offset="0" stopColor="#8B5CF6" stopOpacity=".24" />
+            <stop offset="1" stopColor="#8B5CF6" stopOpacity="0" />
           </linearGradient>
         </defs>
         {[24, 47, 70, 93].map((y) => (

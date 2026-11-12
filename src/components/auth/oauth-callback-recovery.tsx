@@ -25,12 +25,12 @@ export function OAuthCallbackRecovery({ returnTo }: { returnTo: string }) {
   }, [destination]);
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#f3f8f5] p-6 text-[#173c32]">
-      <section className="w-full max-w-md rounded-3xl border border-[#d8e8df] bg-white p-8 text-center shadow-lg">
+    <main className="flex min-h-screen items-center justify-center bg-[#FAF5FF] p-6 text-[#2E1065]">
+      <section className="w-full max-w-md rounded-3xl border border-[#E9D5FF] bg-white p-8 text-center shadow-lg">
         <h1 className="text-2xl font-bold">Finishing your sign-in</h1>
-        <p role="status" className="mt-4 text-sm leading-relaxed text-[#587d6e]">{message}</p>
+        <p role="status" className="mt-4 text-sm leading-relaxed text-[#6E35A0]">{message}</p>
         <Link href={`/sign-in?next=${encodeURIComponent(destination)}`}
-          className="mt-6 inline-block rounded-xl bg-[#16856e] px-5 py-3 text-sm font-bold text-white">
+          className="mt-6 inline-block rounded-xl bg-[#7C3AED] px-5 py-3 text-sm font-bold text-white">
           Back to sign in
         </Link>
       </section>

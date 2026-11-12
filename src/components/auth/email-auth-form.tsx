@@ -7,8 +7,8 @@ import { authClient } from "@/lib/auth/client";
 import { canonicalUsername, usernameError } from "@/lib/auth/username";
 import { safeReturnTo } from "@/lib/auth/redirect";
 
-const inputClass = "mt-1.5 block w-full rounded-xl border border-[#cbded3] bg-white px-4 py-3 text-sm text-[#173d33] placeholder-[#889e92] outline-offset-2 focus:border-[#16856e]";
-const labelClass = "block text-sm font-semibold text-[#284b3f]";
+const inputClass = "mt-1.5 block w-full rounded-xl border border-[#DDD6FE] bg-white px-4 py-3 text-sm text-[#2E1065] placeholder-[#975DC9] outline-offset-2 focus:border-[#7C3AED]";
+const labelClass = "block text-sm font-semibold text-[#42206B]";
 
 export function EmailAuthForm({
   mode, returnTo = "/",
@@ -104,7 +104,7 @@ export function EmailAuthForm({
           <input id="auth-username" name="username" className={inputClass} autoComplete="username" required
             minLength={3} maxLength={24} pattern="[a-zA-Z][a-zA-Z0-9_]{2,23}"
             value={username} onChange={e => setUsername(e.target.value)} placeholder="e.g. ishola1003" />
-          <span className="mt-1 block text-xs font-normal text-[#729082]">
+          <span className="mt-1 block text-xs font-normal text-[#8542C0]">
             Unique group handle. Confirmed after email verification; password login still uses your email.
           </span>
         </label>
@@ -125,7 +125,7 @@ export function EmailAuthForm({
             placeholder={mode === "sign-up" ? "At least 12 characters" : "Your password"} />
           <button type="button" aria-label={showPassword ? "Hide password" : "Show password"}
             onClick={() => setShowPassword(value => !value)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-xs font-bold text-[#16856e]">
+            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-xs font-bold text-[#7C3AED]">
             {showPassword ? "Hide" : "Show"}
           </button>
         </div>
@@ -136,16 +136,16 @@ export function EmailAuthForm({
           value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
       </label>}
       {mode === "sign-in" && <div className="text-right">
-        <Link href="/forgot-password" className="text-xs font-bold text-[#16856e] hover:underline">Forgot password?</Link>
+        <Link href="/forgot-password" className="text-xs font-bold text-[#7C3AED] hover:underline">Forgot password?</Link>
       </div>}
       {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
-      {notice && <p role="status" className="rounded-xl border border-[#c5e5d4] bg-[#ecf8f1] p-3 text-sm text-[#236954]">{notice}</p>}
-      <button type="submit" disabled={busy} className="w-full rounded-xl bg-[#16856e] px-5 py-3 text-sm font-extrabold text-white transition-colors hover:bg-[#116954] disabled:cursor-wait disabled:opacity-55">
+      {notice && <p role="status" className="rounded-xl border border-[#D6C0EA] bg-[#F3EAFA] p-3 text-sm text-[#601C9B]">{notice}</p>}
+      <button type="submit" disabled={busy} className="w-full rounded-xl bg-[#7C3AED] px-5 py-3 text-sm font-extrabold text-white transition-colors hover:bg-[#6D28D9] disabled:cursor-wait disabled:opacity-55">
         {busy ? "Please wait…" : mode === "sign-in" ? "Sign in with email" : "Create account"}
       </button>
-      <p className="text-center text-xs text-[#668074]">
+      <p className="text-center text-xs text-[#773AAD]">
         {mode === "sign-in" ? "New to Poverty Die? " : "Already have an account? "}
-        <Link className="font-bold text-[#16856e] hover:underline" href={mode === "sign-in" ? `/sign-up?next=${encodeURIComponent(next)}` : `/sign-in?next=${encodeURIComponent(next)}`}>
+        <Link className="font-bold text-[#7C3AED] hover:underline" href={mode === "sign-in" ? `/sign-up?next=${encodeURIComponent(next)}` : `/sign-in?next=${encodeURIComponent(next)}`}>
           {mode === "sign-in" ? "Create an account" : "Sign in"}
         </Link>
       </p>
