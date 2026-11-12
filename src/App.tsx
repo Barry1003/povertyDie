@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/brand-logo";
 "use client";
 
 import { useMemo, useState } from "react";
@@ -219,19 +220,7 @@ const primaryNav = [
 ] as [string, IconName][];
 
 function Logo({ small = false }: { small?: boolean }) {
-  return (
-    <div className="logo">
-      <span className="logo-mark">
-        <span>P</span>
-      </span>
-      {!small && (
-        <div>
-          <b>POVERTY DIE</b>
-          <small>WEALTH COLLECTIVE</small>
-        </div>
-      )}
-    </div>
-  );
+  return <div className="logo"><BrandLogo compact={small} size="sm" /></div>;
 }
 function Badge({ children, tone = "neutral" }: { children: React.ReactNode; tone?: string }) {
   return <span className={`badge ${tone}`}>{children}</span>;
