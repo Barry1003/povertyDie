@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/brand-logo";
 "use client";
 
 import { useState, type FormEvent } from "react";
@@ -108,7 +109,7 @@ export function GroupHub({ data }: { data: GroupDashboard }) {
       <header className="sticky top-0 z-20 border-b border-[#dcebe3] bg-white/95 backdrop-blur-lg">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-8">
           <div className="flex min-w-0 items-center gap-3">
-            <span className="grid h-10 w-10 flex-none place-items-center rounded-xl bg-[#16856e] text-lg font-black text-white">P</span>
+            <BrandLogo compact size="sm" />
             <div className="min-w-0">
               <h1 className="truncate text-base font-extrabold sm:text-lg">{data.group.name}</h1>
               <p className="text-xs text-[#73887e]">Our shared wealth circle</p>
