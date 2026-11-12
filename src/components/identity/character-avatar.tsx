@@ -10,8 +10,8 @@ function hashSeed(value: string): number {
 }
 
 const skinTones = ["#f0be95", "#c98b60", "#8b5338", "#dfaa75", "#af7150", "#f5d1ac"];
-const hairTones = ["#2d272e", "#493125", "#241f29", "#76462d", "#1c3435"];
-const outfits = ["#236f67", "#9b6a41", "#3b576b", "#6b568d", "#a76554"];
+const hairTones = ["#2d272e", "#493125", "#241f29", "#76462d", "#2B0D45"];
+const outfits = ["#601C9B", "#9b6a41", "#601C9B", "#6b568d", "#a76554"];
 
 /**
  * A deterministic miniature 3D-style character; no external image request
